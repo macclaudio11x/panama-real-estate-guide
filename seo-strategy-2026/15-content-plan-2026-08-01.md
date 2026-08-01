@@ -117,29 +117,46 @@ panama central america` (KD 15, 590 vol, and it disambiguates from Panama City
 FL), `homes for sale panama` (KD 18, 590 vol), `panamanian real estate for sale`
 (KD 21, 590 vol).
 
-### Blocker: the pillar map assumes a URL structure v2 does not have
+### Resolved: the pillar map now uses v2's flat URL scheme
 
 `06-pillar-cluster-map.csv` was written pre-cutover and prescribes nested
 pillars: `/buying-property-in-panama/`, `/buying-property-in-panama/process/`,
 `/retire-in-panama/best-places/`, and so on. v2 shipped a flat two-level scheme,
 `/[category]/[slug]`, with categories fixed at buying, residency, money, living.
 
-These are incompatible. Three of the map's Wave 1 P0 pages already exist at
-different v2 URLs (`/buying/panama-property-buying-process-guide`,
-`/buying/titled-vs-rights-of-possession`, `/living/retire-in-panama`). Resolve
-before briefing any Phase 2 page, otherwise the first pillar ships at a URL the
-rest of the map does not point at:
+These were incompatible. Decision taken 2026-08-01: **adopt v2's flat scheme.**
+The hierarchy signal the map wanted from URL nesting comes instead from internal
+linking and breadcrumbs, both of which the v2 templates already emit, and moving
+these URLs twice inside a month is worse for the little index presence there is.
+The alternative, adding nested pillar routes to v2, would have meant a routing
+change plus a second set of redirects on pages that moved one day ago.
 
-- **Adopt v2's flat scheme** and rewrite the map's `Suggested_URL` column. Least
-  work, keeps the redirects already built, loses the pillar/child URL hierarchy
-  the map leans on for internal linking.
-- **Add nested routes to v2** for pillars only. Matches the map, but it is a
-  routing change plus a second set of redirects on pages that just moved once.
+All 36 `Suggested_URL` values in `06-pillar-cluster-map.csv` are rewritten to
+v2-flat. Three consequences worth knowing before briefing anything:
 
-Recommendation: adopt the flat scheme. The hierarchy signal the map wants from
-URL nesting can come from internal linking and breadcrumbs, both of which the v2
-templates already emit, and moving these URLs twice inside a month is worse for
-the little index presence there is.
+**The map was more out of date than the URLs.** Its `Disposition` column still
+referenced eleven `/articles/*.html` URLs that no longer exist, and it marked
+four pages "Create" that are already live in v2, which reads as a licence to
+publish a duplicate. Both repointed. It also said "all 13 [project pages] are
+thin"; there are 31.
+
+**Some pages had to change category.** v2's categories are fixed at buying,
+residency, money, living. Property tax and mortgage financing moved from buying
+to money. `best-neighborhoods-panama-city-expats` sits under buying, not living,
+which is where the map filed it.
+
+**No `/tools/`, `/research/` or `/compare/` route exists in v2.** The two tools
+rows are now merged into the guides they belong to: the closing-cost calculator
+embeds in `/buying/panama-closing-costs`, the residency quiz in
+`/residency/panama-residency-guide`. If either is wanted as a standalone
+destination, that is a routing decision, not a content one.
+
+**Three area pages are blocked, all P0.** `/areas/panama-city`,
+`/areas/coronado` and `/areas/pedasi` have no row in `data/airtable.json`, and
+areas are sync-driven from Airtable rather than authored in the repo. Coronado
+is the sharpest case: the map wants an area page, and the live content is an
+article at `/buying/coronado-real-estate-guide`. Someone has to add these areas
+upstream in Airtable, or the map has to accept articles instead of area pages.
 
 ## What is deliberately not here
 
