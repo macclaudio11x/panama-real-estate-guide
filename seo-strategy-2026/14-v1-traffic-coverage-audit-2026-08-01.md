@@ -41,8 +41,10 @@ so `/videos/de_siaqflj0.html` returned 410 while `/videos/de_siaqflj0` returned
 404. Same both-forms bug as the `/proyectos/` canonicals in f751734. Replaced
 the 16 explicit slug rules with a `/videos/*` wildcard.
 
-**2. Four `/news/` URLs still ranking at position 5.0 to 7.8 were 410'd.** Open
-question, not yet actioned:
+**2. Four `/news/` URLs still ranking at position 5.0 to 7.8 were 410'd.**
+Investigated and closed, see "The `/news/` 410s, resolved" below. Keeping the
+table because the surface reading is genuinely alarming and someone will raise
+it again:
 
 | URL | impr | clicks | avg pos |
 |---|---:|---:|---:|
@@ -81,6 +83,54 @@ These read as machine-generated query patterns, not buyer searches. The same
 shape appears on the pets page (`"panama" "pet birds" import permit quarantine`)
 and across the site. Ranking well for them produces no clicks because nobody is
 typing them.
+
+### The split that matters
+
+GSC withholds queries below an anonymisation threshold, which turns out to be a
+usable proxy for "did a real person search this." Splitting the site's queries
+on it is stark:
+
+| | typical position |
+|---|---|
+| Named queries (real search demand) | **40 to 95** |
+| Anonymised long-tail (synthetic shape) | **4 to 12** |
+
+Real commercial queries and where the site actually sits on them:
+
+| query | position |
+|---|---:|
+| `apartments for rent panama city` | 43.7 |
+| `best beaches in panama` | 59 |
+| `best cities to retire in panama` | 65.6 |
+| `best cities in panama for expats` | 68.3 |
+| `how to buy a house in panama` | 71.1 |
+| `best areas to live in panama` | 72 |
+| `best neighborhoods in panama city` | 72 |
+| `best expat communities in panama` | 80 |
+
+So the flattering average positions in the page table (7.6, 8.1, 7.9) are
+averages dominated by the synthetic tail. On anything a buyer would actually
+type, the site is on page 5 to 9. That is the real starting position, and it is
+considerably worse than the page-level averages suggest.
+
+One genuine exception, and it is the most useful signal in the dataset:
+`belize vs panama retirement` sits at **position 6.5** with 8 impressions and
+converted 3 of the site's 52 clicks. A narrow, specific, low-competition
+comparison query is the only thing this site ranks for that a human types.
+
+Also visible: `best neighborhoods in panama city fl` at position 72.3. Panama
+City, Florida. Some share of impressions is wrong-geo and will never convert,
+which `04-keyword-universe.csv` already flags as a disambiguation problem.
+
+### The `/news/` 410s, resolved
+
+Investigated per the open question above. Across the entire `/news/` tree only
+10 query rows clear the anonymisation threshold, and **none of them belong to
+the four URLs in question**. Every one of those 157 impressions came from
+queries too rare to name, which is the same synthetic pattern. The named
+`/news/` queries that do exist rank 42 to 86.
+
+The wholesale 410 stands. No action.
 
 So the redirect map is in good shape and is not what is holding the site back.
 A content plan built around preserving v1's traffic would be optimising a
