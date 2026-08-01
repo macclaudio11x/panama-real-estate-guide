@@ -150,8 +150,54 @@
 /videos/myg4kppu-ay.html  /410.html  410
 /videos/ralwknsyohc.html  /410.html  410
 /videos/stiwn-cuq3e.html  /410.html  410
-/proyectos/buenaventura-ritz-reserve.html  /projects/  301
+# --- /proyectos/ : retired Spanish ad-campaign landings -----------------------
+# These were never organic pages. Each is a templated Spanish landing with a
+# Calendly embed, a WhatsApp CTA and 9 utm_ params, hreflang'd to its /co/ and
+# /es/ campaign siblings. Three of the four names do not exist in the
+# 31-project Airtable inventory at all, and all four borrow a real project's
+# photography (cavarossa-amador x2, buenaventura-resort-cocle,
+# allure-punta-pacifica).
+#
+# GSC, verified live over the full 16-month window on 2026-08-01:
+#   - All four detail URLs, in BOTH forms: "URL is unknown to Google",
+#     last crawled Never. They were never linked from a sitemap
+#     (scripts/build-sitemap.mjs:105 emitted only the hub), so Google has
+#     never once seen them.
+#   - The /proyectos/ hub is the only URL here with index presence:
+#     "Submitted and indexed", last crawled 2026-06-04, 0 clicks /
+#     7 impressions / avg position 5.7 over 16 months.
+#   - Semrush: 0 referring domains on deep URLs; 93 of 103 point at the root.
+#
+# 301 rather than 410, which is the opposite of how the /es/, /de/ and /pt/
+# trees were handled, and deliberately so. That 410 decision was about
+# de-indexing 405 URLs that were indexed and cannibalising their originals.
+# Here there is nothing to de-index: Google has never crawled these. The only
+# traffic they can still receive is human — an old Meta ad, a WhatsApp
+# forward, a bookmark — and for those a working page beats an error page.
+#
+# Destination is the /projects/ index, not a specific listing. Sending an
+# invented name to a real development would misrepresent the listing; sending
+# it to the catalogue just says "that landing is gone, here is what we have."
+#
+# Both URL forms are covered: the .html form v1 linked internally, and the
+# extensionless form each page declared in <link rel="canonical">, og:url and
+# schema.org url. Only the .html form was mapped before the 2026-08-01 audit,
+# so every canonical URL these pages advertised was 404ing.
+/proyectos/casa-korsi-casco-antiguo  /projects/  301
 /proyectos/casa-korsi-casco-antiguo.html  /projects/  301
+/proyectos/euphoria-art-district  /projects/  301
 /proyectos/euphoria-art-district.html  /projects/  301
+/proyectos/sanctuary-residences  /projects/  301
 /proyectos/sanctuary-residences.html  /projects/  301
+
+# Exception: this one is a genuine same-entity match, not an invented name.
+# The landing sells villas at Buenaventura (Coclé) and its own og:image already
+# points at buenaventura-resort-cocle/00.jpg, which is a live v2 project page.
+# Same-entity, so it can go somewhere more useful than the index.
+/proyectos/buenaventura-ritz-reserve  /projects/buenaventura-resort-cocle  301
+/proyectos/buenaventura-ritz-reserve.html  /projects/buenaventura-resort-cocle  301
+
+# The hub was a "featured projects" index; /projects/ is the real equivalent.
+# This is the one rule here that carries actual index equity.
+/proyectos/index.html  /projects/  301
 /proyectos/  /projects/  301

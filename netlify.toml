@@ -63,6 +63,26 @@
   status = 410
   force = true
 
+# =============================================================================
+# 301 — /co/ Colombia ad-campaign landings (4 URLs)
+# =============================================================================
+# Same campaign family as the /proyectos/ landings, and the pages hreflang'd at
+# each other. Deliberately NOT 410 like the /es/, /de/ and /pt/ trees above,
+# for the same reason as /proyectos/: GSC url-inspection on 2026-08-01 reports
+# "URL is unknown to Google, last crawled Never" for these, and 16 months of
+# search analytics return no rows at all. There is no index presence to
+# withdraw, so a 410 would signal nothing to anyone.
+#
+# What is left is residual human traffic from a paid Colombian funnel, where an
+# error page is strictly worse than the home page. The cutover had already
+# dropped these to 404 by omission rather than by decision; this makes the
+# disposition explicit.
+[[redirects]]
+  from = "/co/*"
+  to = "/"
+  status = 301
+  force = true
+
 # 301: collapse duplicate hub URL forms onto the trailing-slash version.
 # Both forms currently draw impressions, splitting the signal.
 [[redirects]]
@@ -77,10 +97,24 @@
   status = 301
   force = true
 
-# NOTE: /proyectos/ is NOT redirected. It holds 4 distinct projects
-# (buenaventura-ritz-reserve, casa-korsi-casco-antiguo, euphoria-art-district,
-# sanctuary-residences) with zero slug overlap against /projects/. They are
-# separate content, not duplicates.
+# NOTE (rewritten 2026-08-01): /proyectos/ IS handled now, in
+# v2/public/_redirects. See the block there for the full rationale and
+# evidence. Keep the rules in that one file rather than splitting them here.
+#
+# The previous note said "/proyectos/ is NOT redirected ... 4 distinct projects
+# ... separate content, not duplicates." That was written pre-cutover, and both
+# halves stopped holding once [build] publish moved to v2/.next:
+#   1. Nothing served them any more, so "not redirected" meant 404, not "live".
+#   2. They were never really project pages. All four are templated Spanish
+#      ad-campaign landings (Calendly + WhatsApp + utm_ params), and three of
+#      the four names do not appear in the project inventory at all.
+#
+# Only the hub carries index equity: GSC has /proyectos/ as "Submitted and
+# indexed" but reports all four detail URLs as unknown and never crawled. So
+# the hub keeps its 301 to /projects/, and the detail URLs 301 there too for
+# the benefit of residual ad traffic rather than 410 like the locale trees.
+# T-10 in seo-strategy-2026/11-technical-seo-backlog.csv is updated to match;
+# its old check ("confirm all 4 /proyectos/ slugs still return 200") is void.
 
 # 301: retired demo project pages back to home
 [[redirects]]
@@ -119,10 +153,15 @@
   status = 301
   force = true
 
-# 301: project detail pages live at /proyectos/, not /articles/proyectos/
+# 301: this used to point at /proyectos/:splat, which after the cutover meant a
+# two-hop chain (verified live 2026-08-01: /articles/proyectos/
+# sanctuary-residences.html -> /proyectos/sanctuary-residences.html ->
+# /projects/). Same final destination, now in one hop. These slugs have no GSC
+# rows and no row in the pruning inventory, so nothing is riding on it either
+# way; a chain is just needless latency and lost equity per hop.
 [[redirects]]
   from = "/articles/proyectos/*"
-  to = "/proyectos/:splat"
+  to = "/projects/"
   status = 301
   force = true
 
