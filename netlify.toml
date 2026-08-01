@@ -83,17 +83,28 @@
   status = 301
   force = true
 
-# 301: collapse duplicate hub URL forms onto the trailing-slash version.
-# Both forms currently draw impressions, splitting the signal.
+# 301: collapse duplicate hub URL forms. Both forms draw impressions, splitting
+# the signal, so the .html form has to land wherever the slashed form lands.
+#
+# Point at "/" directly, not at "/articles/" and "/news/". Those trailing-slash
+# forms are themselves 301 sources in v2/public/_redirects (lines 4-5, both to
+# "/"), so aiming here made a two-hop chain: verified live 2026-08-01,
+# /articles/index.html and /news/index.html each took 2 hops to reach
+# https://panamarealestateguide.com/ with a 200.
+#
+# Same class of bug as the /proyectos/ chain fixed in 1f734ee, but this one has
+# real search presence riding on it. /articles/ is 0 clicks / 54 impressions /
+# avg position 12.3 in seo-strategy-2026/03-url-pruning-inventory.csv, where
+# the /proyectos/ slugs had no GSC rows at all.
 [[redirects]]
   from = "/articles/index.html"
-  to = "/articles/"
+  to = "/"
   status = 301
   force = true
 
 [[redirects]]
   from = "/news/index.html"
-  to = "/news/"
+  to = "/"
   status = 301
   force = true
 
