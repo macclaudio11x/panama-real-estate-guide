@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { areas, articles, projects } from "@/lib/content";
+import { areas, articles, categories, projects } from "@/lib/content";
 import { Button, SectionHead } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
 import { EntryPriceChart } from "@/components/entry-price-chart";
@@ -66,6 +66,60 @@ export default function HomePage() {
           last place on the site claiming something unsourced. */}
       <EntryPriceChart />
 
+      {/* ── The topical anchor — this is the section the homepage was missing.
+          Everything else on the page sells the site's approach; this answers
+          the question a reader (and a search engine) actually comes here with.
+          Every claim links to the guide that carries its sourcing, nothing new
+          is asserted here. */}
+      <section className="bg-white border-b border-line py-[clamp(48px,6vw,76px)]">
+        <div className="wrap">
+          <SectionHead
+            eyebrow="The short version"
+            title="What decides whether a purchase in Panama goes well"
+          />
+          <div className="prose mt-7">
+            <p>
+              Foreigners can own property in Panama outright, on the same
+              terms as a Panamanian citizen. That right applies to titled
+              land only. A lot of what gets marketed as Panama real estate
+              sits on Rights of Possession instead, which is occupancy
+              rather than ownership, and it changes what you can do with the
+              property later.{" "}
+              <Link href="/buying/titled-vs-rights-of-possession">
+                Check title status before you check anything else.
+              </Link>
+            </p>
+            <p>
+              Past that, the process itself is fairly standard: due
+              diligence at the Public Registry, a promise-to-purchase
+              contract, then closing with a notary.{" "}
+              <Link href="/buying/panama-property-buying-process-guide">
+                We walk through each step here.
+              </Link>{" "}
+              Where in the country you&rsquo;re buying does most of the rest
+              of the work. Pricing, title patterns, and resale demand differ
+              by area, which is why{" "}
+              <Link href="/areas">comparing areas</Link> matters more than
+              comparing listings.
+            </p>
+            <p>
+              Buying doesn&rsquo;t grant residency on its own, though it
+              supports a{" "}
+              <Link href="/residency">
+                Friendly Nations or Qualified Investor application
+              </Link>
+              . New construction also carries a property tax exemption the
+              National Assembly renewed through 2028,{" "}
+              <Link href="/money/panama-property-tax-exemption-extended">
+                worth checking before you assume the sticker price is the
+                whole cost
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ── How we work — trust early, above the content ─────────────────── */}
       <section className="bg-white border-b border-line py-[clamp(40px,5vw,60px)]">
         <div className="wrap grid gap-8 min-[880px]:grid-cols-[1fr_auto] min-[880px]:items-center">
@@ -124,35 +178,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Guides ──────────────────────────────────────────────────────── */}
+      {/* ── Guides ──────────────────────────────────────────────────────────
+          Was a card per article — fine at 1 demo article, a 54-card dump
+          after the v1 port. This is the hub's actual job: send a reader to
+          the one of four categories that matches what they're deciding,
+          each of which lists its own guides. */}
       <section className="bg-paper-warm border-y border-line py-[clamp(56px,7vw,88px)]">
         <div className="wrap">
           <SectionHead
             eyebrow="Start here"
-            title="The three things that decide whether a purchase goes wrong"
+            title="Every guide, sorted by what you're deciding"
+            dek={`${articles.length} guides across the four things that decide a Panama purchase: whether you can own it, what it costs, how you get residency, and what living here is actually like.`}
           />
 
-          <div className="mt-11 grid gap-6 min-[720px]:grid-cols-3">
-            {articles.map((a) => (
-              <Link
-                key={a.slug}
-                href={`/${a.categorySlug}/${a.slug}`}
-                className="group rounded-md border border-line bg-white p-6 no-underline shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <p className="font-mono text-[11px] uppercase tracking-[0.077em] text-accent-700">
-                  {a.categorySlug}
-                </p>
-                <h3 className="mt-3 font-display text-[19px] font-semibold leading-snug tracking-[-0.014em] text-ink group-hover:text-brand transition-colors">
-                  {a.title}
-                </h3>
-                <p className="mt-3 text-[15px] leading-relaxed text-muted">
-                  {a.dek}
-                </p>
-                <p className="mt-5 font-mono text-[12px] text-faint tnum">
-                  {a.readMinutes} min · Updated {a.updatedOn}
-                </p>
-              </Link>
-            ))}
+          <div className="mt-11 grid gap-6 min-[640px]:grid-cols-2 min-[980px]:grid-cols-4">
+            {categories.map((c) => {
+              const count = articles.filter(
+                (a) => a.categorySlug === c.slug,
+              ).length;
+              return (
+                <Link
+                  key={c.slug}
+                  href={`/${c.slug}`}
+                  className="group rounded-md border border-line bg-white p-6 no-underline shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <h3 className="font-display text-[19px] font-semibold leading-snug tracking-[-0.014em] text-ink group-hover:text-brand transition-colors">
+                    {c.name}
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted">
+                    {c.blurb}
+                  </p>
+                  <p className="mt-5 font-mono text-[12px] text-faint tnum">
+                    {count} guide{count === 1 ? "" : "s"}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
