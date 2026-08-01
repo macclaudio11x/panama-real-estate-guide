@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -141,18 +142,31 @@ export default async function ArticlePage({
               </div>
             )}
             {article.reviewer && (
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.077em] text-white/55">
-                  Reviewed by
-                </p>
-                <p className="font-display text-[15px] font-bold text-white mt-0.5">
-                  {article.reviewer.name}
-                  {article.reviewer.credential && (
-                    <span className="block font-mono text-[11.5px] font-normal text-white/60 mt-0.5">
-                      {article.reviewer.credential}
-                    </span>
-                  )}
-                </p>
+              <div className="flex items-center gap-3.5">
+                {article.reviewer.avatarUrl && (
+                  <Image
+                    src={article.reviewer.avatarUrl}
+                    alt=""
+                    width={52}
+                    height={52}
+                    /* Portrait crop: the source is a 2:3 standing shot, so pull
+                       the square toward the top so the circle lands on the face. */
+                    className="size-13 shrink-0 rounded-full object-cover object-[56%_18%] ring-[1.5px] ring-accent/45"
+                  />
+                )}
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.077em] text-white/55">
+                    Reviewed by
+                  </p>
+                  <p className="font-display text-[15px] font-bold text-white mt-0.5">
+                    {article.reviewer.name}
+                    {article.reviewer.credential && (
+                      <span className="block font-mono text-[11.5px] font-normal text-white/60 mt-0.5">
+                        {article.reviewer.credential}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             )}
             <div className="min-[700px]:ml-auto flex items-center gap-5">

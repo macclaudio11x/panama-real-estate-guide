@@ -54,10 +54,10 @@ async function main() {
         {
           slug: "david-aguirre",
           name: "David Aguirre",
-          title: "Attorney",
-          bio: "Reviews guides that touch title, tax, or residency law before they publish.",
+          title: "Real estate agent",
+          bio: "Reviews guides that touch pricing, title, and the mechanics of buying before they publish.",
           is_reviewer: true,
-          credential: "Panama-licensed attorney, licence no. PN-2753",
+          credential: "Panama-licensed real estate agent, licence no. PN-2753",
           licence_no: "PN-2753",
           avatar_url: "/authors/david-aguirre.webp",
         },
