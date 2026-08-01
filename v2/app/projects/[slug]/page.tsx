@@ -243,7 +243,7 @@ export default async function ProjectPage({
 
       {/* ── Header + body ───────────────────────────────────────────────── */}
       <div className="wrap grid gap-[clamp(24px,3vw,44px)] py-[clamp(28px,4vw,44px)] min-[900px]:grid-cols-[minmax(0,1fr)_340px]">
-        <div>
+        <div className="min-w-0">
           {p.status && (
             <p className="font-display text-[13px] font-bold uppercase tracking-[0.077em] text-accent-700">
               {statusLabel[p.status]}

@@ -65,15 +65,22 @@ export function EntryPriceChart() {
                   </span>
 
                   <span className="flex items-center gap-3 min-w-0">
-                    <span
-                      aria-hidden
-                      className="h-[11px] rounded-r-[4px] shrink-0 transition-opacity group-hover:opacity-80"
-                      style={{
-                        width: `${pct}%`,
-                        backgroundColor: "#1B7FA8",
-                      }}
-                    />
-                    <span className="font-mono text-[12.5px] tnum text-body whitespace-nowrap">
+                    {/* Track sized to the flex row's remaining space (after the
+                        nowrap label), so the bar's pct% is relative to what's
+                        actually available — not the whole row. Sizing the bar
+                        directly against the row let a near-max pct push past
+                        the label and blow out the row width on mobile. */}
+                    <span className="flex-1 min-w-0 h-[11px]">
+                      <span
+                        aria-hidden
+                        className="block h-full rounded-r-[4px] transition-opacity group-hover:opacity-80"
+                        style={{
+                          width: `${pct}%`,
+                          backgroundColor: "#1B7FA8",
+                        }}
+                      />
+                    </span>
+                    <span className="font-mono text-[12.5px] tnum text-body whitespace-nowrap shrink-0">
                       {usd(a.priceFromUsd)}
                       <span className="text-faint">
                         {" "}

@@ -361,7 +361,18 @@
     color: var(--color-ink);
   }
 
-  /* Tables */
+  /* Tables — the scroll wrapper (added around the markdown-rendered <table>
+     in app/[category]/[slug]/page.tsx) is what actually contains overflow.
+     overflow-x: auto alone on <table> doesn't reliably clip a table whose
+     cells refuse to shrink below their content width; a dedicated ancestor
+     with its own box does. Without it, a wide table forces the whole page
+     wider than the viewport on mobile, and the browser's forced fit-to-screen
+     zoom distorts the rest of the page's type. */
+  .prose .table-scroll {
+    overflow-x: auto;
+    margin-top: 28px;
+  }
+
   .prose table {
     width: 100%;
     border: 1px solid var(--color-line);
@@ -370,7 +381,6 @@
     font-size: 15.5px;
     border-collapse: separate;
     border-spacing: 0;
-    margin-top: 28px;
   }
 
   .prose thead th {
@@ -394,14 +404,6 @@
   .prose tbody td:first-child {
     color: var(--color-ink);
     font-weight: 600;
-  }
-
-  @media (max-width: 560px) {
-    .prose table {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
   }
 }
 

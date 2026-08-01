@@ -189,7 +189,7 @@ export default async function ArticlePage({
 
       {/* ── Body + sidebar ──────────────────────────────────────────────── */}
       <div className="wrap grid gap-[clamp(24px,3vw,36px)] min-[860px]:grid-cols-[minmax(0,1fr)_320px] pb-[clamp(48px,6vw,80px)]">
-        <article className="bg-white rounded-lg shadow-lg -mt-14 p-[clamp(20px,3vw,40px)]">
+        <article className="min-w-0 bg-white rounded-lg shadow-lg -mt-14 p-[clamp(20px,3vw,40px)]">
           <div className="prose">
             {article.body ? (
               <ReactMarkdown
@@ -197,6 +197,11 @@ export default async function ArticlePage({
                 components={{
                   h2: ({ children }) => (
                     <h2 id={slugify(String(children))}>{children}</h2>
+                  ),
+                  table: ({ children }) => (
+                    <div className="table-scroll">
+                      <table>{children}</table>
+                    </div>
                   ),
                 }}
               >
