@@ -12,6 +12,7 @@ import {
 } from "@/lib/content";
 import { getProjectEditorial } from "@/lib/editorial";
 import { Button, TitleBadge, SourceNote } from "@/components/ui";
+import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
 
 /* =============================================================================
@@ -457,10 +458,13 @@ export default async function ProjectPage({
               and what the paperwork actually looks like.
             </p>
 
-            <form action="/api/lead" method="post" className="mt-5 flex flex-col gap-3">
+            <form id="lead-form" action="/api/lead" method="post" className="mt-5 flex flex-col gap-3">
               {/* Attribution: which page produced this lead. */}
               <input type="hidden" name="project" value={p.slug} />
               <input type="hidden" name="area" value={area?.name ?? ""} />
+              {/* Campaign attribution — utm_*, gclid, fbclid, referrer. */}
+              <LeadAttribution />
+              <LeadFormError />
 
               <label className="sr-only" htmlFor="lead-name">
                 Name

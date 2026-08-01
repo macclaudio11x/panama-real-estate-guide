@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Figtree, Source_Sans_3, IBM_Plex_Mono } from "next/font/google";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
+
+/* The root layout is now only what every route shares: the document, the
+   fonts, and the stylesheet. Site chrome moved to app/(site)/layout.tsx when
+   /admin arrived — a broker's leads inbox has no business rendering the
+   marketing header and a footer full of guide links. The (site) group is a
+   naming device only; every public URL is unchanged. */
 
 // Display — geometric humanist, the closest freely-licensable face to
 // sofia-pro (Adobe Fonts, which can't be self-hosted). Generous apertures and
@@ -59,11 +63,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://p.typekit.net" crossOrigin="" />
         <link rel="stylesheet" href="https://use.typekit.net/fot0mck.css" />
       </head>
-      <body className="min-h-full flex flex-col">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

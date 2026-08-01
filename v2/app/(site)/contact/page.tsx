@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { areas } from "@/lib/content";
+import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 
 export const metadata: Metadata = {
   title: "Get your shortlist",
@@ -36,6 +37,7 @@ export default function ContactPage() {
           {/* Two-step in spirit: contact first, qualifiers second. The
               qualifiers are what make the lead worth a broker's call. */}
           <form
+            id="lead-form"
             className="max-w-[640px]"
             action="/api/lead"
             method="post"
@@ -45,11 +47,17 @@ export default function ContactPage() {
               Request a shortlist
             </h2>
 
+            {/* Shown only after /api/lead redirects back with ?lead_error=. */}
+            <LeadFormError />
+
             {/* Honeypot — matches the v1 form-capture convention. */}
             <div className="hidden" aria-hidden>
               <label htmlFor="bot-field">Leave this empty</label>
               <input id="bot-field" name="bot-field" tabIndex={-1} />
             </div>
+
+            {/* utm_*, gclid, fbclid, page_path, referrer — see the component. */}
+            <LeadAttribution />
 
             <fieldset className="border-0 p-0 m-0">
               <legend className="font-display text-[19px] font-bold text-ink mb-5">

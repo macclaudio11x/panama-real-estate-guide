@@ -25,3 +25,27 @@ if (!url || !key) {
 export const supabase = createClient(url, key, {
   auth: { persistSession: false },
 });
+
+/* -----------------------------------------------------------------------------
+   Service-role client
+   -----------------------------------------------------------------------------
+   Bypasses RLS entirely, which is the only way to touch `leads`, `lead_events`,
+   `brokers`, and `subscribers` — those four have RLS enabled with no policy, so
+   every other role reads nothing from them.
+
+   Call this inside a route handler or a server component, never at module
+   scope. Importing this file from a client component is safe (the constant
+   above is public); *calling* this function from one is not, and the missing
+   env var throwing here is what makes that mistake loud instead of silent.
+   -------------------------------------------------------------------------- */
+
+export function supabaseAdmin() {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
+    throw new Error(
+      "Missing SUPABASE_SERVICE_ROLE_KEY. It is server-only — add it to " +
+        "v2/.env.local and to the Netlify environment, never to a NEXT_PUBLIC_ var.",
+    );
+  }
+  return createClient(url!, serviceKey, { auth: { persistSession: false } });
+}
