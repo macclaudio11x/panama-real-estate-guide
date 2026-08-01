@@ -134,22 +134,22 @@
 /news/tocumen-terminal-2-expansion.html  /410.html  410
 /news/world-bank-4-percent-forecast.html  /410.html  410
 /news/wsj-panama-feature.html  /410.html  410
-/videos/0wghjp6gjqm.html  /410.html  410
-/videos/1fc4mqwkapc.html  /410.html  410
-/videos/26gtbsd4m24.html  /410.html  410
-/videos/8eyki76puk8.html  /410.html  410
-/videos/9fsdqerslwm.html  /410.html  410
-/videos/_pqyb3dghvq.html  /410.html  410
-/videos/aozai5qcf-4.html  /410.html  410
-/videos/bvfgd3_lzk0.html  /410.html  410
-/videos/cu6jps5u6ea.html  /410.html  410
-/videos/de_siaqflj0.html  /410.html  410
-/videos/f1mf3d-pd84.html  /410.html  410
-/videos/fmccewv1nhe.html  /410.html  410
-/videos/m5ydnycmx6w.html  /410.html  410
-/videos/myg4kppu-ay.html  /410.html  410
-/videos/ralwknsyohc.html  /410.html  410
-/videos/stiwn-cuq3e.html  /410.html  410
+# Wildcard, not the 16 explicit .html slugs it replaces. Google indexed both URL
+# forms of these, and only the .html form was mapped, so the extensionless form
+# 404'd instead of 410ing. Verified live 2026-08-01: /videos/de_siaqflj0.html
+# returned 410 while /videos/de_siaqflj0 returned 404, and six extensionless
+# video URLs carry GSC impressions (de_siaqflj0 5, fmccewv1nhe 4, m5ydnycmx6w 4,
+# 9fsdqerslwm 3, bvfgd3_lzk0 3, 0wghjp6gjqm 1).
+#
+# Same both-URL-forms bug as the /proyectos/ canonicals in f751734. A wildcard
+# covers every form of every slug, including any Google saw that we never
+# inventoried, and matches how the retired /es/, /de/, /pt/ and /co/ trees are
+# handled in netlify.toml.
+#
+# The /videos/ hub is deliberately NOT caught here: its rule sits at line 6,
+# above this one, and _redirects matches top-down, so the hub keeps its 301
+# to / while everything below it is 410 Gone.
+/videos/*  /410.html  410
 # --- /proyectos/ : retired Spanish ad-campaign landings -----------------------
 # These were never organic pages. Each is a templated Spanish landing with a
 # Calendly embed, a WhatsApp CTA and 9 utm_ params, hreflang'd to its /co/ and
