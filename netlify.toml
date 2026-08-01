@@ -161,7 +161,7 @@
 # way; a chain is just needless latency and lost equity per hop.
 [[redirects]]
   from = "/articles/proyectos/*"
-  to = "/projects/"
+  to = "/projects"
   status = 301
   force = true
 
