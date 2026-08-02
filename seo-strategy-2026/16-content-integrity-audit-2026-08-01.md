@@ -99,11 +99,34 @@ it, do not route around it.
 Three pages have earned it today. The badge is the output of the sourcing pass
 on the other 52, not a substitute for it.
 
+## Supabase edits do not reach the live site on their own
+
+Found while applying the strip. The article route is fully static: it declares
+`generateStaticParams` and no `revalidate` or `dynamic` export exists anywhere
+under `v2/app` except the admin layout and the lead API route. So
+`getArticleFull()` runs at build time and the body is baked into the deployed
+HTML.
+
+Consequence: **every content edit in Supabase needs a redeploy to appear.**
+Correcting a factual error is not a content operation, it is a deploy. That was
+verified rather than assumed on 2026-08-01, when the row for
+`best-neighborhoods-panama-city-expats` was updated and the live page kept
+serving the old body.
+
+This is worth a deliberate decision rather than leaving as-is, because it shapes
+the whole sourcing pass. Either accept that content ships on deploys, or add
+`export const revalidate = <n>` to the article, area and project routes so
+Supabase becomes a live CMS. The second costs a per-request data fetch after
+each window expires and changes the caching story; the first means 52 sourcing
+edits arrive in deploy-sized batches.
+
 ## Recommended order
 
 1. **Strip the fabrications** from `best-neighborhoods-panama-city-expats`.
-   Cannot be done from this repo: the body lives in Supabase and no credentials
-   are checked in, correctly. Needs the service-role key or a hand edit.
+   Done in Supabase on 2026-08-01 and verified against the stored row: 16 edits,
+   body 19,229 to 16,962 characters, all fabrication signals clear. **Not yet
+   visible on the live site**, per the section above. Backup of the original row
+   is in the session scratchpad.
 2. **Sourcing pass on the 52**, prioritised by the rescue order in
    `15-content-plan-2026-08-01.md`. Badge each page as it passes.
 3. **Then** the rescue rewrites. The scope call for
