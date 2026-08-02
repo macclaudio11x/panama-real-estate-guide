@@ -6,8 +6,18 @@ turned out to carry invented testimony during a routine rescue rewrite.
 
 ## Result in one line
 
-The fabrication is contained to one page. The missing sourcing is not: 52 of 55
-articles render no sources at all, and the line between the two groups is exact.
+Fabricated evidence sits on four pages, internal marketing copy on eight, and
+52 of 55 articles render no sources at all.
+
+> **Correction, same day.** The first version of this document said the
+> fabrication was "contained to one page." That was wrong. The scan behind it
+> matched only the `Name, NN, Occupation` persona format and therefore missed
+> `Name (NN, occupation, country)`, which is the format two more pages use. It
+> also had no pattern at all for the internal social-media copy described below.
+> Corrected counts are in this version. The lesson worth keeping: a
+> single-pattern scan reports absence of evidence as evidence of absence, so
+> anything claiming "contained to N pages" needs at least two independent
+> patterns per class before it is worth believing.
 
 ## Fabricated evidence
 
@@ -37,6 +47,39 @@ And factual errors:
 | "El Cangrejo is Panama City's downtown" | A walkable mid-market neighbourhood. The banking district is Obarrio / Área Bancaria. |
 | Paitilla, "suburban feel", "you'll drive everywhere" | Dense high-rise waterfront |
 | Casco Viejo's rough edge is "eastern … near Curundu" | El Chorrillo, and it is west |
+
+**Two more pages, found on the corrected scan.**
+`/buying/panama-retirement-communities` ("Marcus (65, former engineer, USA)",
+"Sarah & David (60s couple, Canada)") and `/living/apartments-for-rent-panama-city`
+("James (35, software engineer, USA → Paitilla)", "Aisha (28, teacher, UK →
+San Francisco)", "Marco & Chen"). Same shape as the first: quoted first-person
+speech, named individual, age, occupation, nothing behind it. Both removed
+2026-08-01.
+
+## Internal marketing copy published as article content
+
+Eight pages ended with a section of social-media drafts, written for whoever
+was going to promote the article and never removed. They carry the giveaways
+intact: `[link]` and `[article link]` placeholders, "Link in bio", "DM for
+neighborhood recommendations", and character-count annotations like
+"**X/Twitter (280 chars):**".
+
+The headings vary, which is why one pattern missed them: `## Social Hooks`,
+`## Social Media Hooks`, `## Social Hooks for Repurposing`, and one `# Social
+Hooks` nested under `## Next Steps with VIP Expats`.
+
+Worse, the drafts contain their own fabricated testimony. From
+`panama-retirement-communities`:
+
+> **LinkedIn**: "Retirement planning changed when I moved to Panama. My fixed
+> income ($1,800/month) went from tight to comfortable overnight."
+
+Affected: `coronado-real-estate-guide`, `panama-property-buying-process-guide`,
+`panama-real-estate-investment-lifestyle-2026`, `panama-real-estate-market-2026`,
+`panama-retirement-communities`, `apartments-for-rent-panama-city`,
+`how-to-rent-apartment-panama`, `apostille-documents-panama-visa`. All eight
+removed 2026-08-01, 10,854 characters in total. Every block ran to the end of
+the article, so the removal was a truncation and nothing after it was disturbed.
 
 **Cleared: the comparison pages.** `/living/panama-vs-belize-retirement` and
 `/living/panama-vs-mexico-retirement` tripped the same scan with six and four
@@ -98,6 +141,27 @@ it, do not route around it.
 
 Three pages have earned it today. The badge is the output of the sourcing pass
 on the other 52, not a substitute for it.
+
+## Two open questions, both needing a decision rather than an edit
+
+**"VIP Expats" appears on 36 of 55 pages**, usually as a `## Next Steps with VIP
+Expats` CTA section. It appears nowhere in the v2 codebase, nowhere on `/about`,
+and nowhere in the site's own branding. One page also claims "our VIP Expats
+advisors have lived in every neighborhood on this list", which is a factual
+claim about staff. Whether this is a real partner, a dormant brand, or v1
+residue is not something the repo can answer. Left in place pending that
+answer, since removing a live business relationship on inference would be worse
+than leaving it.
+
+**Outbound links to direct competitors.** Body content links out to
+`panamarealestatesale.com` 16 times across 8 pages, plus
+`discoverbocasrealty.com`, `solbungalowsbocas.com` and
+`livinginbocasdeltoro.com`. Four of those links point at
+`panamarealestatesal.com`, missing the "e", so they are dead as well as
+outbound. Two pages cite Numbeo, which is user-submitted data presented as an
+authority and does not meet the sourcing bar. None of these were touched:
+deciding what a real-estate site should link to is an editorial call, not a
+cleanup.
 
 ## Supabase edits do not reach the live site on their own
 
