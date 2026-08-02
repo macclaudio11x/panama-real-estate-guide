@@ -71,7 +71,7 @@
 /articles/panama-drivers-license-foreigners.html  /living/panama-drivers-license-foreigners  301
 /articles/panama-food-guide-expats.html  /living/panama-food-guide-expats  301
 /articles/panama-for-digital-nomads-2026.html  /living/panama-for-digital-nomads-2026  301
-/articles/panama-for-families-with-children.html  /living/panama-for-families-with-children  301
+/articles/panama-for-families-with-children.html  /living/living-in-panama  301
 /articles/panama-healthcare-costs-2026.html  /living/panama-healthcare-costs-2026  301
 /articles/panama-sim-card-guide.html  /living/panama-sim-card-guide  301
 /articles/panama-weather-guide.html  /living/panama-weather-rainy-season-guide  301
@@ -234,7 +234,23 @@
 # (for-families-with-children, things-to-do, getting-around-panama-city,
 # pedasi-rising, santa-catalina) are living-in-Panama and area content, not
 # relocation logistics, so they stay live until their own destination exists.
+# (for-families-with-children was resolved by the living pillar below.)
 # The three sibling from-COUNTRY pages are left alone: they carry their own
 # traffic and are not on the T3 list. Forced, and the v1 .html rule above is
 # repointed so nothing chains.
 /living/moving-to-panama-from-florida  /living/moving-to-panama  301!
+
+# --- unblocked by the living pillar, 2026-08-02 --------------------------------
+# Doc 17 expected /living/living-in-panama to absorb three blocked T3 pages. On
+# reading the finished pillar only ONE is a genuine same-subject match:
+# for-families-with-children, whose real question is schooling and safety with
+# children, both of which the pillar answers with sourced figures.
+#
+# Deliberately NOT redirected, because forcing them is the /es/ soft-404 mistake:
+#   things-to-do-in-panama        attractions and leisure; the pillar has none
+#   getting-around-panama-city    a fares how-to, and the pillar publishes no
+#                                 fares on purpose (operator site unreachable)
+#   pedasi-rising, santa-catalina area content with no area page to land on
+# Those four stay live. Forced, and the v1 .html rule above is repointed so
+# nothing chains.
+/living/panama-for-families-with-children  /living/living-in-panama  301!
