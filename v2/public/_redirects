@@ -62,10 +62,10 @@
 /articles/panama-para-mexicanos-guia-2026.html  /living/retire-in-panama  301
 /articles/panama-para-peruanos-guia-2026.html  /living/retire-in-panama  301
 /articles/vivir-en-panama-venezolanos.html  /living/retire-in-panama  301
-/articles/what-to-pack-moving-to-panama.html  /living/what-to-pack-moving-to-panama  301
+/articles/what-to-pack-moving-to-panama.html  /money/real-cost-of-moving-to-panama  301
 /articles/10-best-places-to-live-in-panama-2026.html  /buying/best-neighborhoods-panama-city-expats  301
 /articles/best-beaches-panama-expats.html  /living/best-beaches-panama-expats  301
-/articles/expat-depression-panama-unfiltered.html  /living/expat-depression-panama-unfiltered  301
+/articles/expat-depression-panama-unfiltered.html  /living/why-expats-leave-panama-2-years  301
 /articles/getting-around-panama-city-guide.html  /living/getting-around-panama-city-guide  301
 /articles/internet-providers-panama-expats.html  /living/internet-providers-panama-expats  301
 /articles/panama-drivers-license-foreigners.html  /living/panama-drivers-license-foreigners  301
@@ -79,7 +79,7 @@
 /articles/pros-cons-retiring-panama.html  /living/retire-in-panama  301
 /articles/retire-in-panama.html  /living/retire-in-panama  301
 /articles/safety-in-panama-2026-real-data-rumors.html  /living/safety-in-panama-2026-real-data-rumors  301
-/articles/supermarkets-shopping-panama-expats.html  /living/supermarkets-shopping-panama-expats  301
+/articles/supermarkets-shopping-panama-expats.html  /living/panama-food-guide-expats  301
 /articles/things-to-do-in-panama.html  /living/things-to-do-in-panama  301
 /articles/why-expats-leave-panama-2-years.html  /living/why-expats-leave-panama-2-years  301
 /articles/panama-vs-belize-retirement.html  /living/panama-vs-belize-retirement  301
@@ -205,3 +205,18 @@
 # This is the one rule here that carries actual index equity.
 /proyectos/index.html  /projects  301
 /proyectos/  /projects  301
+
+# --- T3 triage, 2026-08-02: thin pages folded into a same-topic keeper --------
+# See seo-strategy-2026/17-page-triage-2026-08-02.md. These three are the only
+# T3 pages with a genuinely same-subject destination; the other seven have no
+# home until the pillar pages in 06-pillar-cluster-map.csv are built, so they
+# stay live rather than being pointed somewhere loosely related, which reads as
+# a soft 404 and loses the equity anyway.
+#
+# Forced (301!) because the v2 routes still resolve as static pages until the
+# next build drops them from lib/content.ts. Without the bang, Netlify serves
+# the file and the rule never fires. The v1 .html rules above were repointed at
+# the same destinations in this commit so nothing chains through a dead slug.
+/living/expat-depression-panama-unfiltered  /living/why-expats-leave-panama-2-years  301!
+/living/supermarkets-shopping-panama-expats  /living/panama-food-guide-expats  301!
+/living/what-to-pack-moving-to-panama  /money/real-cost-of-moving-to-panama  301!
