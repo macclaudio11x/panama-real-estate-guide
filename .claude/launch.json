@@ -4,7 +4,7 @@
     {
       "name": "v2",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "v2", "run", "dev"],
+      "runtimeArgs": ["--prefix", "v2", "exec", "--", "next", "dev", "v2"],
       "port": 3000
     },
     {

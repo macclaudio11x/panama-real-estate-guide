@@ -102,6 +102,8 @@ writing:
 
 - **`references/page-types.md`** — project pages, area pages, and guides, with
   the section order and the publish bar for each
+- **`references/images.md`** — the ```chart block, and the rule that we never
+  generate a photorealistic image of a real property
 
 ## The publish bar
 

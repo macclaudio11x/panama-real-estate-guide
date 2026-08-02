@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { articles, categories } from "@/lib/content";
 import { getArticleFull } from "@/lib/editorial";
+import { ArticleChart, parseChartSpec } from "@/components/article-chart";
 import { Button } from "@/components/ui";
 
 export function generateStaticParams() {
@@ -203,6 +204,30 @@ export default async function ArticlePage({
                       <table>{children}</table>
                     </div>
                   ),
+                  /* ```chart blocks render as a figure. Intercepted at `pre`
+                     rather than `code` because react-markdown wraps fenced code
+                     in <pre>, and a <figure> inside <pre> is invalid HTML that
+                     would also inherit monospace styling. Reads the hast node
+                     so the raw JSON is available before React escapes it.
+                     Anything that is not a valid chart falls through to a
+                     normal code block, so a typo shows the JSON rather than
+                     breaking the page. */
+                  pre: ({ node, children }) => {
+                    const code = node?.children?.[0];
+                    const cls =
+                      code?.type === "element" ? code.properties?.className : null;
+                    const isChart =
+                      Array.isArray(cls) && cls.includes("language-chart");
+                    if (isChart && code?.type === "element") {
+                      const first = code.children?.[0];
+                      const spec =
+                        first?.type === "text"
+                          ? parseChartSpec(first.value)
+                          : null;
+                      if (spec) return <ArticleChart spec={spec} />;
+                    }
+                    return <pre>{children}</pre>;
+                  },
                 }}
               >
                 {article.body}
