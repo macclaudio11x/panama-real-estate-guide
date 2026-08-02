@@ -201,3 +201,61 @@ Two smaller items to fold into the pass rather than schedule separately: move
 the WhatsApp CTA out of body content on 47 pages, and populate the structured
 `faqs` field on the 22 pages that currently keep their FAQs as body markdown and
 therefore emit no FAQPage schema.
+
+---
+
+## Addendum, 2026-08-02: "VIP Expats" was a fabricated authority, not a partner
+
+The open question above is answered, and the answer changes the plan.
+
+VIP Expats is not a business relationship. It is an invented firm used across 36
+articles to manufacture first-hand experience the site does not have. 96
+occurrences in four shapes:
+
+| shape | count |
+|---|---:|
+| Prose mention | 36 |
+| Fabricated advisor quote or attribution | 30 |
+| CTA / blockquote section heading | 20 |
+| Fabricated first-party experience claim | 10 |
+
+Representative, all invented:
+
+> "We've rejected 12 applications this quarter because applicants apostilled
+> bank statements instead of requesting a certified letter"
+
+> VIP Expats' relocation team has helped **over 1,000 expats** find housing
+
+> Our team has: Relocated **1,200+ Canadians**
+
+> **Field Note from VIP Expats Advisor (8+ years in Panama):**
+
+> "A client in Punta Pacifica faced a $12,000 special assessment"
+
+The device is the "Field note" blockquote, distributed through the body rather
+than appended at the end. Some carry no VIP Expats branding at all and are the
+same fabrication, so the removal targets the device, not the name.
+
+**Removed 2026-08-02 from 40 articles:** every heading-delimited VIP Expats
+section, every "Field note" blockquote, and every standalone attribution line.
+
+**Deliberately left: 24 prose mentions across 15 pages.** Cutting a clause out
+of a paragraph leaves worse prose than leaving it, and every one of those pages
+is on the rewrite list. They go when the page is rewritten, not before.
+
+## Why this settles clean-up versus rewrite
+
+The cleanup approach is now exhausted, and this is the evidence. Five distinct
+classes of fabrication have surfaced, each invisible to the scan that found the
+last one: testimonials, internal social drafts, orphan chart captions, a
+generation brief served as a meta description, and now an invented advisory firm
+woven through two thirds of the site.
+
+The last one is decisive because it is not a layer on top of the content. The
+"Field notes" **are** the experience signal. Strip them and what remains is a
+generic article with holes where its authority used to be. There is nothing
+underneath to recover.
+
+So: rewrite, do not repair. The stripping done to date was triage to get
+fabricated claims off a live site quickly, and it was worth doing on that basis
+alone. It was never going to produce a good page.
