@@ -40,7 +40,7 @@
 /articles/apostille-documents-panama-visa.html  /residency/apostille-documents-panama-visa  301
 /articles/panama-golden-visa-2026.html  /residency/panama-golden-visa-2026  301
 /articles/panama-tax-benefits-foreigners-2026.html  /residency/panama-tax-benefits-foreigners-2026  301
-/articles/panama-visa-rejected-what-to-do.html  /residency/panama-visa-rejected-what-to-do  301
+/articles/panama-visa-rejected-what-to-do.html  /residency/panama-residency-guide  301
 /articles/start-business-panama-foreigners.html  /residency/start-business-panama-foreigners  301
 /articles/atm-cash-panama-guide.html  /money/atm-cash-panama-guide  301
 /articles/cost-of-living-panama-vs-us.html  /money/panama-cost-of-living-2026  301
@@ -220,3 +220,10 @@
 /living/expat-depression-panama-unfiltered  /living/why-expats-leave-panama-2-years  301!
 /living/supermarkets-shopping-panama-expats  /living/panama-food-guide-expats  301!
 /living/what-to-pack-moving-to-panama  /money/real-cost-of-moving-to-panama  301!
+
+# --- unblocked by the residency pillar, 2026-08-02 -----------------------------
+# visa-rejected was stranded in doc 17's T3 list because it had no destination.
+# /residency/panama-residency-guide now exists and covers the three routes and
+# their thresholds, which is the question behind "my visa was rejected". Forced,
+# and the v1 .html rule below is repointed so nothing chains.
+/residency/panama-visa-rejected-what-to-do  /residency/panama-residency-guide  301!
