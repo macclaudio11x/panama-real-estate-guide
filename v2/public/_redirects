@@ -50,7 +50,7 @@
 /articles/sending-money-panama-wire-transfer.html  /money/sending-money-panama-wire-transfer  301
 /articles/how-to-move-to-panama-step-by-step-2026.html  /money/real-cost-of-moving-to-panama  301
 /articles/moving-to-panama-from-canada.html  /living/moving-to-panama-from-canada  301
-/articles/moving-to-panama-from-florida.html  /living/moving-to-panama-from-florida  301
+/articles/moving-to-panama-from-florida.html  /living/moving-to-panama  301
 /articles/moving-to-panama-from-texas.html  /living/moving-to-panama-from-texas  301
 /articles/moving-to-panama-from-uk.html  /living/moving-to-panama-from-uk  301
 /articles/moving-to-panama-with-pets.html  /living/moving-to-panama-with-pets  301
@@ -227,3 +227,14 @@
 # their thresholds, which is the question behind "my visa was rejected". Forced,
 # and the v1 .html rule below is repointed so nothing chains.
 /residency/panama-visa-rejected-what-to-do  /residency/panama-residency-guide  301!
+
+# --- unblocked by the moving pillar, 2026-08-02 --------------------------------
+# moving-to-panama-from-florida is the one page in doc 17's blocked T3 list whose
+# subject the new pillar actually covers. The remaining five blocked pages
+# (for-families-with-children, things-to-do, getting-around-panama-city,
+# pedasi-rising, santa-catalina) are living-in-Panama and area content, not
+# relocation logistics, so they stay live until their own destination exists.
+# The three sibling from-COUNTRY pages are left alone: they carry their own
+# traffic and are not on the T3 list. Forced, and the v1 .html rule above is
+# repointed so nothing chains.
+/living/moving-to-panama-from-florida  /living/moving-to-panama  301!
