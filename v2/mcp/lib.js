@@ -109,35 +109,42 @@ export const HOUSE_STYLE = [
   "Documentary editorial photograph for a serious property-journalism publication.",
   "Candid reportage, not stock photography and not an illustration.",
 
-  // The whole register. Stock reads as posed and lit; reportage reads as walked
-  // in on. The difference is almost entirely eyeline, clutter and light.
-  "SUBJECT: exactly one adult, absorbed in an ordinary task and unaware of the",
-  "camera. Never looking at the lens, never posed, never smiling at nothing.",
-  "Caught mid-action — reading a page, writing, on the phone, thinking with a hand",
-  "at the temple. An expression that belongs to the task. Follow the age, gender and",
-  "appearance given in the scene exactly — these run as a set and must not all look",
-  "like the same person.",
+  // TREATMENT ONLY. An earlier version of this also prescribed the setting — "a
+  // kitchen table, a home desk, a small office" — and every one of 32 covers
+  // came back as a person at a desk with paperwork, whatever the article was
+  // about. The house style governs how it is shot. The scene decides what is in
+  // it, including where it happens and how many people are there.
+  "LOCATION: exactly what the scene specifies and nowhere else. Never relocate the",
+  "scene to a desk, a kitchen table or an office unless it asks for one.",
+  "Wherever it is set, it is a real working place with the wear, clutter and",
+  "signage-free background that belongs to it. Nothing styled for the shot.",
 
-  "SETTING: a real lived-in North American home or small office — a kitchen table,",
-  "a home desk, a cluttered back office. Not a British or European interior.",
-  "Ordinary domestic clutter that belongs there: a used mug, stacked paperwork, a",
-  "pen, a laptop, a houseplant, worn wooden furniture. Nothing styled, nothing new,",
-  "nothing arranged for the shot.",
+  // A neutral depiction of the topic gives a reader no reason to click. Every
+  // one of these pages exists because something in it is not what buyers assume,
+  // so the picture should carry that doubt rather than the topic.
+  "TENSION: the frame must hold one unresolved beat — someone hesitating, noticing",
+  "something, or not believing what they are being told. Two people who want",
+  "different things, or one person facing something that is not what they expected.",
+  "Never a contented, settled or resolved moment. The viewer should want to know",
+  "what the catch is.",
 
-  "LIGHT: natural daylight from a window, soft and directional, often behind or",
-  "beside the subject. No flash, no studio lighting, no rim lights, no colour gels.",
+  "PEOPLE: follow the scene exactly on how many, their age, gender and appearance.",
+  "Everyone is mid-action and unaware of the camera — never looking at the lens,",
+  "never posed, never smiling at nothing. Expressions belong to what they are doing.",
 
-  "CAMERA: 35mm or 50mm at eye level, shallow depth of field so the subject is sharp",
-  "and the room falls off gently. Slightly off-centre framing with room to breathe.",
+  "LIGHT: available light only, soft and directional. No flash, no studio lighting,",
+  "no rim lights, no colour gels.",
 
-  "GRADE: warm and muted — creams, browns, soft neutrals. Gentle contrast, no heavy",
-  "saturation, no teal-and-orange, no HDR crunch. The grade describes the LIGHT, not",
-  "the wardrobe: dress the subject in the colour the scene specifies and never",
-  "default to an olive or sage sweater.",
+  "CAMERA: 35mm or 50mm at eye level, shallow depth of field, slightly off-centre",
+  "framing with room to breathe.",
 
-  "ABSOLUTELY NO readable text, words, numbers, labels, logos, brand marks or",
-  "watermarks anywhere in the frame. Paperwork and screens stay out of focus enough",
-  "that nothing on them can be read.",
+  "GRADE: warm and muted, gentle contrast, no heavy saturation, no teal-and-orange,",
+  "no HDR crunch. The grade describes the LIGHT, not the wardrobe — dress people in",
+  "the colours the scene gives and never default to an olive or sage sweater.",
+
+  "ABSOLUTELY NO readable text, words, numbers, labels, logos, brand marks, street",
+  "signs or watermarks anywhere in the frame. Paperwork and screens stay out of",
+  "focus enough that nothing on them can be read.",
 
   "SCENE:",
 ].join(" ");
