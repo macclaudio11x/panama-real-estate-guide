@@ -8,11 +8,11 @@
 /articles/colon-panama-real-estate.html  /buying/colon-panama-real-estate  301
 /articles/avenida-balboa-panama-real-estate.html  /buying/avenida-balboa-panama-real-estate  301
 /articles/2026-outlook.html  /buying/panama-real-estate-market-2026  301
-/articles/friendly-nations-2026.html  /residency/friendly-nations-2026  301
+/articles/friendly-nations-2026.html  /residency/panama-residency-guide  301
 /articles/pedasi-rising.html  /buying/pedasi-rising  301
 /articles/rental-yields.html  /buying/panama-real-estate-investment-lifestyle-2026  301
 /articles/dollarization.html  /buying/panama-real-estate-market-2026  301
-/articles/tax-primer.html  /residency/panama-tax-benefits-foreigners-2026  301
+/articles/tax-primer.html  /residency/start-business-panama-foreigners  301
 /articles/pensionado-panama-city-condo-2026.html  /living/retire-in-panama  301
 /articles/condos-panama-bajo-400k-colombianos.html  /living/retire-in-panama  301
 /articles/comprar-imovel-panama-brasileiros-2026.html  /living/retire-in-panama  301
@@ -36,10 +36,10 @@
 /articles/panama-real-estate-market-2026.html  /buying/panama-real-estate-market-2026  301
 /articles/panama-retirement-communities.html  /buying/panama-retirement-communities  301
 /articles/apartments-for-rent-panama-city.html  /living/apartments-for-rent-panama-city  301
-/articles/how-to-rent-apartment-panama.html  /living/how-to-rent-apartment-panama  301
+/articles/how-to-rent-apartment-panama.html  /living/apartments-for-rent-panama-city  301
 /articles/apostille-documents-panama-visa.html  /residency/apostille-documents-panama-visa  301
-/articles/panama-golden-visa-2026.html  /residency/panama-golden-visa-2026  301
-/articles/panama-tax-benefits-foreigners-2026.html  /residency/panama-tax-benefits-foreigners-2026  301
+/articles/panama-golden-visa-2026.html  /residency/panama-residency-guide  301
+/articles/panama-tax-benefits-foreigners-2026.html  /residency/start-business-panama-foreigners  301
 /articles/panama-visa-rejected-what-to-do.html  /residency/panama-residency-guide  301
 /articles/start-business-panama-foreigners.html  /residency/start-business-panama-foreigners  301
 /articles/atm-cash-panama-guide.html  /money/atm-cash-panama-guide  301
@@ -254,3 +254,32 @@
 # Those four stay live. Forced, and the v1 .html rule above is repointed so
 # nothing chains.
 /living/panama-for-families-with-children  /living/living-in-panama  301!
+
+# --- section A consolidation, 2026-08-04 --------------------------------------
+# See seo-strategy-2026/19-unfinished-triage-runbook-2026-08-04.md, "Disposition
+# of all 22". Four unsourced pages folded into a keeper that is already sourced
+# and genuinely covers the same question. Verified before writing each rule:
+#   friendly-nations-2026 (257w)         -> residency-guide names Friendly
+#                                           Nations x10 and the qualified-
+#                                           investor threshold x8
+#   panama-golden-visa-2026              -> same destination; "golden visa" is a
+#                                           marketing label for the same routes
+#   panama-tax-benefits-foreigners-2026  -> start-business covers what DGI taxes
+#                                           and the territorial exemptions
+#   how-to-rent-apartment-panama         -> apartments-for-rent covers the lease,
+#                                           the deposit and the tenancy law
+#
+# The fifth page in doc 19's list, condos-for-sale-panama-buyers-guide, is NOT
+# here. The runbook calls it "fully covered" by the buying-process guide, but
+# that destination never uses the word condo, and the condo page carries HOA
+# fees, pre-construction and rental yields that the destination does not answer.
+# Redirecting it would be the same loosely-related soft 404 refused above, so it
+# moves to the rewrite queue instead.
+#
+# Forced (301!) for the reason given in the T3 block: the v2 routes still resolve
+# as static pages until the article is set to draft. The v1 .html rules above are
+# repointed at the final destinations in this commit so nothing chains.
+/residency/friendly-nations-2026  /residency/panama-residency-guide  301!
+/residency/panama-golden-visa-2026  /residency/panama-residency-guide  301!
+/residency/panama-tax-benefits-foreigners-2026  /residency/start-business-panama-foreigners  301!
+/living/how-to-rent-apartment-panama  /living/apartments-for-rent-panama-city  301!
