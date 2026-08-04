@@ -101,14 +101,41 @@ export async function uploadToR2(bytes, contentType, path) {
  * reader cannot tell a rendered building from a photographed one, so the site
  * does not publish either.
  */
-export const HOUSE_STYLE =
-  "Editorial vector illustration for a serious property-journalism site. " +
-  "Flat shapes, clean geometry, generous negative space, no gradients on text, " +
-  "no photographic realism, no lens effects, no people's faces. " +
-  "Palette strictly: deep Pacific navy #0B4F6C, warm paper #F7F4EE, " +
-  "a single gold accent #E8A33D, and ink #14181C. " +
-  "No text, no letters, no numbers, no logos, no watermarks anywhere in the image. " +
-  "Subject:";
+export const HOUSE_STYLE = [
+  "Conceptual editorial spot illustration for a serious property-journalism publication.",
+
+  // The signature move. Without an explicit size contrast the model reverts to
+  // a centred object on an empty field, which is the generic look this exists
+  // to avoid.
+  "COMPOSITION: build the image on a deliberate contrast of scale — one element",
+  "enormous and one element very small, so the size difference itself carries the",
+  "argument. The subject occupies most of the frame. Empty areas must be doing",
+  "work as shape, never left over as filler. One clear focal point, off-centre.",
+
+  // Cutout collage rather than drawn vector: the edges are what stop this
+  // reading as clip art.
+  "TECHNIQUE: hard-edged paper-cutout collage. Every shape looks scissored from",
+  "flat coloured stock and laid down. Crisp silhouettes, no outlines, no strokes,",
+  "no gradients, no soft shadows, no glow, no 3D shading, no lens effects.",
+  "Flat front-on view. No perspective, no vanishing points, no extruded or boxed",
+  "edges, no objects tilted into depth.",
+  "Slight matte paper grain is allowed. Nothing photographic or rendered.",
+
+  "SUBJECT MATTER: ordinary recognisable objects — a door, a ladder, a key, a wall,",
+  "a passport, a stamp, a fence, a set of stairs. One idea per image, stated plainly",
+  "through the objects. No montage of several ideas. A human presence, if any, is a",
+  "single small flat silhouette with no facial features and no detail.",
+
+  "PALETTE: strictly four flats — deep Pacific navy #0B4F6C, warm paper #F7F4EE,",
+  "gold #E8A33D used sparingly as the single accent on the one thing that matters,",
+  "and near-black ink #14181C. No other hues, no tints, no pastels.",
+
+  "ABSOLUTELY NO text, letters, words, numbers, labels, logos, signatures or",
+  "watermarks anywhere in the image. No squiggles, wavy lines or marks that imitate",
+  "handwriting. Where a document needs body copy, use plain solid blocks.",
+
+  "SUBJECT:",
+].join(" ");
 
 const PHOTO_WORDS =
   /\b(photo|photograph|photorealistic|photo-realistic|realistic render|3d render|hyperreal|dslr|bokeh|drone shot)\b/i;
