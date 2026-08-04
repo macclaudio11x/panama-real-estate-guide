@@ -6,6 +6,8 @@ import { getAreaEditorialFull } from "@/lib/editorial";
 import { Button, TitleBadge, SourceNote } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
 
+export const revalidate = 60;
+
 export function generateStaticParams() {
   return areas.map((a) => ({ slug: a.slug }));
 }

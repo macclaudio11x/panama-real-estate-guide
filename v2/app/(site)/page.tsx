@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { areas, articles, categories, projects } from "@/lib/content";
+import { areas, categories, projects } from "@/lib/content";
+import { listArticles } from "@/lib/articles";
 import { Button, SectionHead } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
 import { EntryPriceChart } from "@/components/entry-price-chart";
@@ -15,7 +16,11 @@ const featured = (() => {
     .slice(0, 6);
 })();
 
-export default function HomePage() {
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const articles = await listArticles();
+
   return (
     <>
       {/* ── Hero ───────────────────────────────────────────────────────────

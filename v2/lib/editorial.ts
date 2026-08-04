@@ -144,6 +144,7 @@ export type ArticleFull = {
   faqs: Faq[];
   sources: SourceRef[];
   readMinutes: number | null;
+  ogImagePath: string | null;
   author: ArticleAuthor | null;
   reviewer: ArticleAuthor | null;
   reviewedOn: string | null;
@@ -163,7 +164,7 @@ export async function getArticleFull(
   const { data, error } = await supabase
     .from("articles")
     .select(
-      `title, dek, body, faqs, sources, read_minutes, reviewed_on,
+      `title, dek, body, faqs, sources, read_minutes, reviewed_on, og_image_path,
        author:authors!articles_author_id_fkey ( name, title, bio, credential, avatar_url ),
        reviewer:authors!articles_reviewer_id_fkey ( name, title, bio, credential, avatar_url )`,
     )
@@ -195,6 +196,7 @@ export async function getArticleFull(
     faqs: (data.faqs as Faq[]) ?? [],
     sources: (data.sources as SourceRef[]) ?? [],
     readMinutes: data.read_minutes,
+    ogImagePath: data.og_image_path,
     author: toAuthor(author),
     reviewer: toAuthor(reviewer),
     reviewedOn: data.reviewed_on,

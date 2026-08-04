@@ -39,6 +39,8 @@ import { mediaUrl, absoluteMedia } from "@/lib/media";
    thin pages do not rank no matter how good the markup is.
    ============================================================================= */
 
+export const revalidate = 60;
+
 export function generateStaticParams() {
   return projects.map((p) => ({ slug: p.slug }));
 }

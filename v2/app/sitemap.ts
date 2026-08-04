@@ -1,9 +1,14 @@
 import type { MetadataRoute } from "next";
-import { articles, areas, projects, categories } from "@/lib/content";
+import { areas, projects, categories } from "@/lib/content";
+import { listArticles } from "@/lib/articles";
 
 const SITE_BASE = "https://panamarealestateguide.com";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+/* Revalidated so a newly published article appears in the sitemap without a
+   deploy, matching the routes themselves. */
+export const revalidate = 60;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE_BASE}/`, changeFrequency: "daily", priority: 1.0 },
     ...categories.map((c) => ({
@@ -13,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 
-  const articleRoutes: MetadataRoute.Sitemap = articles.map((a) => ({
+  const articleRoutes: MetadataRoute.Sitemap = (await listArticles()).map((a) => ({
     url: `${SITE_BASE}/${a.categorySlug}/${a.slug}`,
     changeFrequency: "monthly",
     priority: 0.8,

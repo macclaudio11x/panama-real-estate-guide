@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { articles, categories } from "@/lib/content";
+import { categories } from "@/lib/content";
+import { listArticlesIn } from "@/lib/articles";
+import { mediaUrl } from "@/lib/media";
 import { Button } from "@/components/ui";
+
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.slug }));
@@ -31,7 +36,7 @@ export default async function CategoryPage({
   const cat = categories.find((c) => c.slug === category);
   if (!cat) notFound();
 
-  const inCategory = articles.filter((a) => a.categorySlug === category);
+  const inCategory = await listArticlesIn(category);
   const siblings = categories.filter((c) => c.slug !== category);
 
   return (
@@ -108,6 +113,15 @@ export default async function CategoryPage({
                   href={`/${a.categorySlug}/${a.slug}`}
                   className="group rounded-md border border-line bg-white p-6 no-underline shadow-sm hover:shadow-md transition-all duration-200"
                 >
+                  {a.ogImagePath && (
+                    <Image
+                      src={mediaUrl(a.ogImagePath)!}
+                      alt=""
+                      width={480}
+                      height={270}
+                      className="w-full h-auto rounded-sm mb-5"
+                    />
+                  )}
                   <h3 className="font-display text-[18px] font-semibold leading-snug text-ink group-hover:text-brand transition-colors">
                     {a.title}
                   </h3>
@@ -115,7 +129,7 @@ export default async function CategoryPage({
                     {a.dek}
                   </p>
                   <p className="mt-5 font-mono text-[12px] text-faint tnum">
-                    {a.readMinutes} min · {a.updatedOn}
+                    {[a.readMinutes && `${a.readMinutes} min`, a.updatedOn].filter(Boolean).join(" · ")}
                   </p>
                 </Link>
               ))}

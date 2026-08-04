@@ -4,13 +4,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { articles, categories } from "@/lib/content";
+import { categories } from "@/lib/content";
+import { listArticles, relatedArticles } from "@/lib/articles";
 import { getArticleFull } from "@/lib/editorial";
+import { mediaUrl, absoluteMedia } from "@/lib/media";
 import { ArticleChart, parseChartSpec } from "@/components/article-chart";
 import { Button } from "@/components/ui";
 
-export function generateStaticParams() {
-  return articles.map((a) => ({ category: a.categorySlug, slug: a.slug }));
+/* Supabase is the source of truth for article content, so the routes have to
+   re-read it. 60s means an edit made through the MCP is live within a minute
+   without a deploy; `dynamicParams` stays at its default true, so an article
+   created after the last build renders on first request rather than 404ing. */
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return (await listArticles()).map((a) => ({
+    category: a.categorySlug,
+    slug: a.slug,
+  }));
 }
 
 export async function generateMetadata({
@@ -21,6 +32,10 @@ export async function generateMetadata({
   const { category, slug } = await params;
   const article = await getArticleFull(category, slug);
   if (!article) return {};
+  // v1 shipped one shared og:image across every article, pointing at a file
+  // that was not even in the repo. An article without its own image gets none,
+  // which at least lets the crawler fall back to the site default.
+  const og = article.ogImagePath ? absoluteMedia(article.ogImagePath) : null;
   return {
     title: article.title,
     description: article.dek ?? undefined,
@@ -30,7 +45,9 @@ export async function generateMetadata({
       description: article.dek ?? undefined,
       url: `/${category}/${slug}`,
       type: "article",
+      ...(og && { images: [{ url: og, width: 1200, height: 675, alt: article.title }] }),
     },
+    ...(og && { twitter: { card: "summary_large_image", images: [og] } }),
   };
 }
 
@@ -57,9 +74,7 @@ export default async function ArticlePage({
   if (!article) notFound();
 
   const cat = categories.find((c) => c.slug === category);
-  const related = articles
-    .filter((a) => a.slug !== slug || a.categorySlug !== category)
-    .slice(0, 3);
+  const related = await relatedArticles(category, slug);
   const sections = article.body ? extractHeadings(article.body) : [];
   const reviewedForAccuracy = Boolean(article.reviewer && article.reviewedOn);
 
@@ -71,6 +86,7 @@ export default async function ArticlePage({
         headline: article.title,
         description: article.dek ?? undefined,
         url: `https://panamarealestateguide.com/${category}/${slug}`,
+        ...(article.ogImagePath && { image: [absoluteMedia(article.ogImagePath)] }),
         ...(article.author && { author: { "@type": "Person", name: article.author.name } }),
         ...(reviewedForAccuracy && article.reviewer && {
           reviewedBy: { "@type": "Person", name: article.reviewer.name },
@@ -191,6 +207,21 @@ export default async function ArticlePage({
       {/* ── Body + sidebar ──────────────────────────────────────────────── */}
       <div className="wrap grid gap-[clamp(24px,3vw,36px)] min-[860px]:grid-cols-[minmax(0,1fr)_320px] pb-[clamp(48px,6vw,80px)]">
         <article className="min-w-0 bg-white rounded-lg shadow-lg -mt-14 p-[clamp(20px,3vw,40px)]">
+          {/* Cover art, when the article has its own. Illustrated, never a
+              photorealistic rendering of a real place or building — a fake
+              photograph of a named property is a fabricated source in a format
+              nobody can audit. Deliberately not decorative filler: an article
+              without an image renders without a hole where one would be. */}
+          {article.ogImagePath && (
+            <Image
+              src={mediaUrl(article.ogImagePath)!}
+              alt=""
+              width={1200}
+              height={675}
+              priority
+              className="w-full h-auto rounded-md mb-[clamp(20px,3vw,32px)]"
+            />
+          )}
           <div className="prose">
             {article.body ? (
               <ReactMarkdown
@@ -333,6 +364,15 @@ export default async function ArticlePage({
                   href={`/${r.categorySlug}/${r.slug}`}
                   className="group rounded-md border border-line bg-white p-6 no-underline shadow-sm hover:shadow-md transition-all duration-200"
                 >
+                  {r.ogImagePath && (
+                    <Image
+                      src={mediaUrl(r.ogImagePath)!}
+                      alt=""
+                      width={480}
+                      height={270}
+                      className="w-full h-auto rounded-sm mb-5"
+                    />
+                  )}
                   <p className="font-mono text-[11px] uppercase tracking-[0.077em] text-accent-700">
                     {r.categorySlug}
                   </p>
@@ -340,7 +380,7 @@ export default async function ArticlePage({
                     {r.title}
                   </h3>
                   <p className="mt-4 font-mono text-[12px] text-faint tnum">
-                    {r.readMinutes} min · {r.updatedOn}
+                    {[r.readMinutes && `${r.readMinutes} min`, r.updatedOn].filter(Boolean).join(" · ")}
                   </p>
                 </Link>
               ))}
