@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "panama": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["v2/mcp/server.js"]
+    }
+  }
+}
