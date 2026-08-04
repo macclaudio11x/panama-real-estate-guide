@@ -119,14 +119,20 @@ export const HOUSE_STYLE = [
   "Wherever it is set, it is a real working place with the wear, clutter and",
   "signage-free background that belongs to it. Nothing styled for the shot.",
 
-  // A neutral depiction of the topic gives a reader no reason to click. Every
-  // one of these pages exists because something in it is not what buyers assume,
-  // so the picture should carry that doubt rather than the topic.
-  "TENSION: the frame must hold one unresolved beat — someone hesitating, noticing",
-  "something, or not believing what they are being told. Two people who want",
-  "different things, or one person facing something that is not what they expected.",
-  "Never a contented, settled or resolved moment. The viewer should want to know",
-  "what the catch is.",
+  // A neutral depiction of the topic gives a reader no reason to click, so the
+  // frame needs a pull. An earlier version got this by making something wrong —
+  // a defect, a doubt, a disagreement — which is the copy's job, not the
+  // picture's. The reader is deciding whether to move to Panama; a photograph
+  // that makes them feel bad about it works against the entire funnel.
+  "PULL: the frame holds one moment that has not landed yet but is clearly going",
+  "to land well — arriving somewhere, being shown something worth seeing, deciding,",
+  "discovering, getting the answer. Forward-leaning, warm, competent, hopeful.",
+  "Curiosity, not doubt. The viewer should want to know how it turns out, not what",
+  "went wrong.",
+
+  "NEVER: damage, stains, mould, cracks, leaks, dereliction, mess or disrepair.",
+  "No arguing, worry, distress, confusion, disappointment, rejection or bad news.",
+  "Nobody is being turned away, and nothing in the frame is broken.",
 
   "PEOPLE: follow the scene exactly on how many, their age, gender and appearance.",
   "Everyone is mid-action and unaware of the camera — never looking at the lens,",
