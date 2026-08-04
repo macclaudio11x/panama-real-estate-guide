@@ -623,7 +623,9 @@ const handlers = {
       else attached = `\nAttached to "${a.article_slug}" as its cover and OG image. Live within ~60 seconds.`;
     }
     return text(
-      `Generated and uploaded.\n  path: ${up.path}\n  url:  ${up.url}\n  size: ${(img.bytes.length / 1024).toFixed(0)} KB${attached}`,
+      `Generated and uploaded.\n  path: ${up.path}\n  url:  ${up.url}\n` +
+        `  size: ${(img.bytes.length / 1024).toFixed(0)} KB webp ` +
+        `(from ${(img.rawBytes / 1024 / 1024).toFixed(1)} MB jpeg)${attached}`,
     );
   },
 

@@ -52,7 +52,7 @@ write. Run this server locally over stdio only — never expose it on a network.
 | `lint_article` | House rules, no write. |
 | `list_areas` · `get_area` · `update_area` | Area page prose. |
 | `list_projects` · `get_project` · `update_project` | Project page prose and the published flag. |
-| `generate_image` | Gemini → R2 → attached to the article. |
+| `generate_image` | Gemini → resize + WebP → R2 → attached to the article. |
 | `set_article_image` · `upload_media` | Attach or upload by hand. |
 | `list_authors` · `list_categories` | Reference. |
 
@@ -74,6 +74,11 @@ under 400 words. `force: true` overrides it; if you use that, say why.
 
 **Warned about**: more than three em-dashes, trailing-dash punchlines, a body
 under 900 words, a source with no `checkedOn` date.
+
+Gemini returns a ~1.7 MB 2752px JPEG at 300 DPI, which is a print asset. Every
+generated image is resized to 1600px and re-encoded as WebP before upload —
+around 10 KB for flat vector art, and still twice the widest slot the article
+layout gives it.
 
 `generate_image` refuses any prompt asking for photographic realism. A rendered
 building is indistinguishable from a photographed one, which makes it the same

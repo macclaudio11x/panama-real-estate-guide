@@ -12,6 +12,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import sharp from "sharp";
 
 const V2 = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -114,6 +115,22 @@ const PHOTO_WORDS =
 
 const RETRY_MS = [1500, 3000, 4500];
 
+/* Gemini hands back a 2752px JPEG at 300 DPI, around 1.7 MB. That is a print
+   asset, not a web one: 54 covers at that size is ~90 MB in the bucket, and
+   next/image has to pull the full original once per generated size. 1600px is
+   already twice the widest slot the article layout gives it, and flat vector
+   art with hard edges is exactly what WebP compresses well — the same picture
+   lands around 60 KB. */
+const MAX_WIDTH = 1600;
+
+async function toWebp(raw) {
+  const bytes = await sharp(raw)
+    .resize({ width: MAX_WIDTH, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toBuffer();
+  return { bytes, mimeType: "image/webp" };
+}
+
 export async function generateImageBytes({
   prompt,
   model = "gemini-3.1-flash-image-preview",
@@ -157,11 +174,8 @@ export async function generateImageBytes({
       const data = await res.json();
       const part = data.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
       if (!part?.inlineData?.data) throw new Error("Gemini returned no image.");
-      return {
-        bytes: Buffer.from(part.inlineData.data, "base64"),
-        mimeType: part.inlineData.mimeType || "image/png",
-        prompt: full,
-      };
+      const raw = Buffer.from(part.inlineData.data, "base64");
+      return { ...(await toWebp(raw)), rawBytes: raw.length, prompt: full };
     } catch (err) {
       lastErr = err;
       if (attempt < RETRY_MS.length) await new Promise((r) => setTimeout(r, RETRY_MS[attempt]));
