@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { MetaPixel } from "@/components/meta-pixel";
 
 /* Public-site chrome. Lifted out of the root layout so /admin can render its
    own shell — this group adds nothing to any URL. Analytics sits here for the
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <main className="flex-1">{children}</main>
       <SiteFooter />
       <GoogleAnalytics />
+      <MetaPixel />
     </>
   );
 }
