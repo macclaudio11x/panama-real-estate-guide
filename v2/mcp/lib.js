@@ -93,52 +93,74 @@ export async function uploadToR2(bytes, contentType, path) {
 /* ── Gemini image generation ──────────────────────────────────────────────── */
 
 /**
- * The house style, prepended to every prompt.
+ * The house style, prepended to every prompt. Modelled on leyconsulta.com,
+ * which runs documentary-style photography rather than stock or illustration:
+ * one person mid-task in a real room, natural window light, warm muted grade.
  *
- * Illustration, never photography. The rule this enforces is recorded in the
- * panama-writer skill: a photorealistic image of a named real property is the
- * same failure as a fabricated testimonial, in a format harder to audit. A
- * reader cannot tell a rendered building from a photographed one, so the site
- * does not publish either.
+ * The line this holds, from the panama-writer skill: the site does not publish
+ * a photoreal image of a named property or an identifiable place. That is the
+ * same failure as a fabricated testimonial in a format harder to audit — a
+ * reader takes a photograph of Bioma or a Boquete hillside as evidence about
+ * Bioma or Boquete. A photograph of an anonymous person reading a contract at
+ * a kitchen table asserts nothing checkable, so it is fair game. Situations,
+ * not properties. `PLACE_WORDS` below enforces it.
  */
 export const HOUSE_STYLE = [
-  "Conceptual editorial spot illustration for a serious property-journalism publication.",
+  "Documentary editorial photograph for a serious property-journalism publication.",
+  "Candid reportage, not stock photography and not an illustration.",
 
-  // The signature move. Without an explicit size contrast the model reverts to
-  // a centred object on an empty field, which is the generic look this exists
-  // to avoid.
-  "COMPOSITION: build the image on a deliberate contrast of scale — one element",
-  "enormous and one element very small, so the size difference itself carries the",
-  "argument. The subject occupies most of the frame. Empty areas must be doing",
-  "work as shape, never left over as filler. One clear focal point, off-centre.",
+  // The whole register. Stock reads as posed and lit; reportage reads as walked
+  // in on. The difference is almost entirely eyeline, clutter and light.
+  "SUBJECT: exactly one adult, absorbed in an ordinary task and unaware of the",
+  "camera. Never looking at the lens, never posed, never smiling at nothing.",
+  "Caught mid-action — reading a page, writing, on the phone, thinking with a hand",
+  "at the temple. An expression that belongs to the task. Follow the age, gender and",
+  "appearance given in the scene exactly — these run as a set and must not all look",
+  "like the same person.",
 
-  // Cutout collage rather than drawn vector: the edges are what stop this
-  // reading as clip art.
-  "TECHNIQUE: hard-edged paper-cutout collage. Every shape looks scissored from",
-  "flat coloured stock and laid down. Crisp silhouettes, no outlines, no strokes,",
-  "no gradients, no soft shadows, no glow, no 3D shading, no lens effects.",
-  "Flat front-on view. No perspective, no vanishing points, no extruded or boxed",
-  "edges, no objects tilted into depth.",
-  "Slight matte paper grain is allowed. Nothing photographic or rendered.",
+  "SETTING: a real lived-in North American home or small office — a kitchen table,",
+  "a home desk, a cluttered back office. Not a British or European interior.",
+  "Ordinary domestic clutter that belongs there: a used mug, stacked paperwork, a",
+  "pen, a laptop, a houseplant, worn wooden furniture. Nothing styled, nothing new,",
+  "nothing arranged for the shot.",
 
-  "SUBJECT MATTER: ordinary recognisable objects — a door, a ladder, a key, a wall,",
-  "a passport, a stamp, a fence, a set of stairs. One idea per image, stated plainly",
-  "through the objects. No montage of several ideas. A human presence, if any, is a",
-  "single small flat silhouette with no facial features and no detail.",
+  "LIGHT: natural daylight from a window, soft and directional, often behind or",
+  "beside the subject. No flash, no studio lighting, no rim lights, no colour gels.",
 
-  "PALETTE: strictly four flats — deep Pacific navy #0B4F6C, warm paper #F7F4EE,",
-  "gold #E8A33D used sparingly as the single accent on the one thing that matters,",
-  "and near-black ink #14181C. No other hues, no tints, no pastels.",
+  "CAMERA: 35mm or 50mm at eye level, shallow depth of field so the subject is sharp",
+  "and the room falls off gently. Slightly off-centre framing with room to breathe.",
 
-  "ABSOLUTELY NO text, letters, words, numbers, labels, logos, signatures or",
-  "watermarks anywhere in the image. No squiggles, wavy lines or marks that imitate",
-  "handwriting. Where a document needs body copy, use plain solid blocks.",
+  "GRADE: warm and muted — creams, browns, soft neutrals. Gentle contrast, no heavy",
+  "saturation, no teal-and-orange, no HDR crunch. The grade describes the LIGHT, not",
+  "the wardrobe: dress the subject in the colour the scene specifies and never",
+  "default to an olive or sage sweater.",
 
-  "SUBJECT:",
+  "ABSOLUTELY NO readable text, words, numbers, labels, logos, brand marks or",
+  "watermarks anywhere in the frame. Paperwork and screens stay out of focus enough",
+  "that nothing on them can be read.",
+
+  "SCENE:",
 ].join(" ");
 
-const PHOTO_WORDS =
-  /\b(photo|photograph|photorealistic|photo-realistic|realistic render|3d render|hyperreal|dslr|bokeh|drone shot)\b/i;
+/* Named developments and identifiable places we actually write about. A
+   photograph of one of these is a claim about it; a photograph of a person at a
+   table is not. This is the line the illustration-only rule was really drawing. */
+const PLACE_WORDS = new RegExp(
+  "\\b(" +
+    [
+      // developments in the projects table
+      "pino alto", "bioma", "allure", "towncenter", "silverbay", "margaritaville",
+      "buenaventura", "altos del maria", "cavarossa", "empire residences", "mova",
+      "playa escondida", "the westin",
+      // places with an area or article page
+      "boquete", "bocas del toro", "costa del este", "punta pacifica", "casco viejo",
+      "coronado", "playa venao", "pedasi", "santa catalina", "san blas", "guna yala",
+      "amador", "marbella", "obarrio", "santa maria", "panama city skyline",
+      "tocumen", "cinta costera",
+    ].join("|") +
+  ")\\b",
+  "i",
+);
 
 const RETRY_MS = [1500, 3000, 4500];
 
@@ -166,11 +188,13 @@ export async function generateImageBytes({
 }) {
   // Checked before the credential, so the house rule holds whether or not the
   // key is configured.
-  if (PHOTO_WORDS.test(prompt)) {
+  const named = prompt.match(PLACE_WORDS);
+  if (named) {
     throw new Error(
-      `Prompt asks for photographic realism (${prompt.match(PHOTO_WORDS)[0]}). This site does not ` +
-        "publish photoreal images of places or buildings — a rendered building is indistinguishable " +
-        "from a photographed one and is unauditable. Describe an illustration instead.",
+      `Prompt names a real place or development ("${named[0]}"). The house style is photographic, ` +
+        "so this would produce a picture a reader takes as evidence about somewhere we make " +
+        "checkable claims about — the fabricated-testimonial failure in a harder-to-audit format. " +
+        "Photograph the situation instead: the person, the paperwork, the room. Never the property.",
     );
   }
   if (!process.env.GEMINI_API_KEY) {
