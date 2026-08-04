@@ -111,6 +111,20 @@
       "region": "Caribbean",
       "projectCount": 0,
       "priceFromUsd": null
+    },
+    {
+      "slug": "pedasi",
+      "name": "Pedasí",
+      "region": "Pacific Coast",
+      "projectCount": 0,
+      "priceFromUsd": null
+    },
+    {
+      "slug": "santa-catalina",
+      "name": "Santa Catalina",
+      "region": "Pacific Coast",
+      "projectCount": 0,
+      "priceFromUsd": null
     }
   ],
   "projects": [

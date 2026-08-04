@@ -9,7 +9,7 @@
 /articles/avenida-balboa-panama-real-estate.html  /buying/avenida-balboa-panama-real-estate  301
 /articles/2026-outlook.html  /buying/panama-real-estate-market-2026  301
 /articles/friendly-nations-2026.html  /residency/panama-residency-guide  301
-/articles/pedasi-rising.html  /buying/pedasi-rising  301
+/articles/pedasi-rising.html  /areas/pedasi  301
 /articles/rental-yields.html  /buying/panama-real-estate-investment-lifestyle-2026  301
 /articles/dollarization.html  /buying/panama-real-estate-market-2026  301
 /articles/tax-primer.html  /residency/start-business-panama-foreigners  301
@@ -25,7 +25,7 @@
 /articles/coronado-real-estate-guide.html  /buying/coronado-real-estate-guide  301
 /articles/living-in-panama-city.html  /buying/best-neighborhoods-panama-city-expats  301
 /articles/playa-venao-panama.html  /areas/playa-venao  301
-/articles/santa-catalina-panama.html  /buying/santa-catalina-panama  301
+/articles/santa-catalina-panama.html  /areas/santa-catalina  301
 /articles/condos-for-sale-panama-buyers-guide.html  /buying/condos-for-sale-panama-buyers-guide  301
 /articles/how-to-buy-property-in-panama-2026-guide.html  /buying/panama-property-buying-process-guide  301
 /articles/panama-investment-opportunities.html  /buying/panama-real-estate-investment-lifestyle-2026  301
@@ -251,8 +251,9 @@
 #   getting-around-panama-city    a fares how-to, and the pillar publishes no
 #                                 fares on purpose (operator site unreachable)
 #   pedasi-rising, santa-catalina area content with no area page to land on
-# Those four stay live. Forced, and the v1 .html rule above is repointed so
-# nothing chains.
+#                                 (RESOLVED 2026-08-04, see the area block below)
+# The remaining two stay live. Forced, and the v1 .html rule above is repointed
+# so nothing chains.
 /living/panama-for-families-with-children  /living/living-in-panama  301!
 
 # --- section A consolidation, 2026-08-04 --------------------------------------
@@ -283,3 +284,25 @@
 /residency/panama-golden-visa-2026  /residency/panama-residency-guide  301!
 /residency/panama-tax-benefits-foreigners-2026  /residency/start-business-panama-foreigners  301!
 /living/how-to-rent-apartment-panama  /living/apartments-for-rent-panama-city  301!
+
+# --- section C unblocked: two new area pages, 2026-08-04 -----------------------
+# Doc 19 filed pedasi-rising and santa-catalina-panama as blocked because neither
+# Pedasí nor Santa Catalina existed as an area, so there was nothing to
+# consolidate into. Both now exist: rows in v2/data/airtable.json create the
+# routes, and the Supabase area rows carry sourced editorial.
+#
+# Each area page is sourced where the article was not. Pedasí carries the
+# Ministerio Público provincial homicide count (Los Santos: 1 in 2025) and the
+# IMHPA rainfall regime for the Arco Seco. Santa Catalina carries the UNESCO and
+# UNEP-WCMC record for Coiba. Both declare title_status unknown with a note
+# saying so, rather than asserting a position we have not verified.
+#
+# This is the same shape as playa-venao-panama.html -> /areas/playa-venao above:
+# an area's article folded into the area page that supersedes it.
+#
+# Forced (301!) for the reason in the T3 block. The airtable rows and these rules
+# ship in the same commit, so the destinations exist on the deploy that makes the
+# rules fire. The two articles stay published until that deploy lands, then go to
+# draft. Reversing that order 404s a live URL.
+/buying/pedasi-rising  /areas/pedasi  301!
+/buying/santa-catalina-panama  /areas/santa-catalina  301!
