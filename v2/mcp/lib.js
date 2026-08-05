@@ -264,6 +264,16 @@ export const wordCount = (s) => (s ? String(s).trim().split(/\s+/).length : 0);
  * The house rules, checked in one place so every write path gets them.
  * Returns { errors, warnings }. Errors block a publish; warnings never do.
  */
+/** Drop the body's own "## Sources" section, keeping anything that follows it.
+ *  Its dashes are the prescribed label format, not a voice problem. */
+function stripSourcesSection(md) {
+  const start = md.search(/^##\s+sources\b/im);
+  if (start === -1) return md;
+  const rest = md.slice(start);
+  const next = rest.search(/^##\s+(?!sources\b)/im);
+  return md.slice(0, start) + (next === -1 ? "" : rest.slice(next));
+}
+
 export function lintArticle(row) {
   const errors = [];
   const warnings = [];
@@ -298,14 +308,21 @@ export function lintArticle(row) {
 
   // Charles reads em-dash-as-connective-tissue as an AI-writing tell. Table
   // pipes and genuine parentheticals are fine, so this counts rather than bans.
-  const emDashes = (body.match(/—/g) || []).length;
+  //
+  // The numbered Sources block is excluded. Its dashes sit in the house
+  // "Institution — Document" label format that the update_article schema itself
+  // prescribes, so counting them flagged well-formed pages as failing. Two
+  // writers hit that false positive independently, and a linter that cries wolf
+  // on correct work trains people to ignore it.
+  const prose = stripSourcesSection(body);
+  const emDashes = (prose.match(/—/g) || []).length;
   if (emDashes > 3) {
     warnings.push(
-      `${emDashes} em-dashes in the body. House voice bans em-dash-as-connective-tissue and ` +
-        "trailing-dash punchlines — rewrite them as full stops or commas before publishing.",
+      `${emDashes} em-dashes in the body prose. House voice bans em-dash-as-connective-tissue and ` +
+        "trailing-dash punchlines. Rewrite them as full stops or commas before publishing.",
     );
   }
-  if (/—\s*[^\n]{0,60}\.\s*$/m.test(body)) {
+  if (/—\s*[^\n]{0,60}\.\s*$/m.test(prose)) {
     warnings.push("A paragraph ends on a trailing-dash punchline. Rewrite it.");
   }
 
