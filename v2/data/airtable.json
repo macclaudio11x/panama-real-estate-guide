@@ -1177,9 +1177,9 @@
       "name": "The Westin Residences",
       "areaSlug": "playa-bonita",
       "published": true,
-      "status": "delivered",
-      "priceFromUsd": 320000,
-      "priceToUsd": 650000,
+      "status": "preselling",
+      "priceFromUsd": 400000,
+      "priceToUsd": 716800,
       "bedsMin": null,
       "bedsMax": null,
       "sizeFromM2": 80,
@@ -1198,21 +1198,14 @@
           "beds": null,
           "baths": null,
           "sizeM2": 128,
-          "priceFromUsd": 450000
+          "priceFromUsd": 716800
         },
         {
           "name": "1-2 Bedroom Residences",
           "beds": null,
           "baths": null,
           "sizeM2": 80,
-          "priceFromUsd": 320000
-        },
-        {
-          "name": "Premium Unit / Penthouse",
-          "beds": null,
-          "baths": null,
-          "sizeM2": 209,
-          "priceFromUsd": 650000
+          "priceFromUsd": 400000
         }
       ],
       "photos": [
