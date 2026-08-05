@@ -196,7 +196,7 @@
       "dataSource": "developer-listed"
     },
     {
-      "slug": "nautilus-punta-pacifica",
+      "slug": "nautilus-amador",
       "name": "Nautilus",
       "areaSlug": "amador",
       "published": true,
@@ -317,23 +317,23 @@
       ],
       "photos": [
         {
-          "src": "/projects/nautilus-punta-pacifica/01.webp",
+          "src": "/projects/nautilus-amador/01.webp",
           "alt": null
         },
         {
-          "src": "/projects/nautilus-punta-pacifica/02.webp",
+          "src": "/projects/nautilus-amador/02.webp",
           "alt": null
         },
         {
-          "src": "/projects/nautilus-punta-pacifica/03.webp",
+          "src": "/projects/nautilus-amador/03.webp",
           "alt": null
         },
         {
-          "src": "/projects/nautilus-punta-pacifica/04.webp",
+          "src": "/projects/nautilus-amador/04.webp",
           "alt": null
         },
         {
-          "src": "/projects/nautilus-punta-pacifica/05.webp",
+          "src": "/projects/nautilus-amador/05.webp",
           "alt": null
         }
       ],
