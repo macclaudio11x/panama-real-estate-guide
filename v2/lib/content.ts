@@ -1,4 +1,5 @@
 import airtable from "@/data/airtable.json";
+import { normalizeAmenities } from "@/lib/amenities";
 
 /* =============================================================================
    Content model — v2
@@ -112,13 +113,20 @@ export type Area = AreaEditorial & {
    Supabase RLS policy is `using (published)` — so reading everything here would
    show 18 projects publicly that vanish the moment the data source changes.
    The flag is the editorial control; the code just honours it. */
-export const projects = (airtable.projects as Project[]).filter(
-  (p) => p.published,
-);
+const clean = (p: Project): Project => ({
+  ...p,
+  // Amenities arrive as raw Spanish developer copy and the sync overwrites any
+  // fix made in the JSON, so the cleanup has to happen here. See lib/amenities.
+  amenities: normalizeAmenities(p.amenities),
+});
+
+export const projects = (airtable.projects as Project[])
+  .filter((p) => p.published)
+  .map(clean);
 
 /** Every project including unpublished. For internal tooling only — never
  *  render these. */
-export const allProjects = airtable.projects as Project[];
+export const allProjects = (airtable.projects as Project[]).map(clean);
 
 export const areas: Area[] = airtable.areas.map((a) => {
   const inArea = projects.filter((p) => p.areaSlug === a.slug);
