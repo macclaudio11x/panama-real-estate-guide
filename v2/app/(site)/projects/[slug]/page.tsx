@@ -69,11 +69,17 @@ export async function generateMetadata({
     // appended. On a page whose whole job is ranking for the project's own
     // name, 26 characters of branding is 26 characters of truncation risk.
     title: { absolute: `${p.name}${areaSuffix} — prices & floor plans` },
-    description: `${p.name} in ${where}. ${p.models.length} unit type${p.models.length === 1 ? "" : "s"} from ${usd(p.priceFromUsd)}${p.status ? `, ${statusLabel[p.status].toLowerCase()}` : ""}. Prices as listed by the developer.`,
+    // A project we hold no verified price for says so rather than rendering
+    // "from —", which reads as a broken template in a search result.
+    description: p.priceFromUsd
+      ? `${p.name} in ${where}. ${p.models.length} unit type${p.models.length === 1 ? "" : "s"} from ${usd(p.priceFromUsd)}${p.status ? `, ${statusLabel[p.status].toLowerCase()}` : ""}. Prices as listed by the developer.`
+      : `${p.name} in ${where}${p.status ? `, ${statusLabel[p.status].toLowerCase()}` : ""}. We hold no independently verified pricing for this project.`,
     alternates: { canonical: `/projects/${p.slug}` },
     openGraph: {
       title: `${p.name} — ${where}`,
-      description: `${p.models.length} unit types from ${usd(p.priceFromUsd)}.`,
+      description: p.priceFromUsd
+        ? `${p.models.length} unit types from ${usd(p.priceFromUsd)}.`
+        : `No independently verified pricing.`,
       url: `/projects/${p.slug}`,
       type: "website",
       images: p.photos[0] ? [{ url: mediaUrl(p.photos[0].src)! }] : undefined,
@@ -265,15 +271,24 @@ export default async function ProjectPage({
             </p>
           )}
 
-          <p className="font-display text-[clamp(30px,4vw,40px)] font-bold tracking-[-0.0204em] text-ink tnum mt-5 leading-none">
-            from {usd(p.priceFromUsd)}
-            {p.priceToUsd && p.priceToUsd !== p.priceFromUsd && (
-              <span className="text-muted font-semibold text-[24px]">
-                {" "}
-                to {usd(p.priceToUsd)}
-              </span>
-            )}
-          </p>
+          {/* No verified price means no price slot. Rendering "from —" here
+              would look like a bug; saying nothing and letting the editorial
+              explain the gap is the honest version. */}
+          {p.priceFromUsd ? (
+            <p className="font-display text-[clamp(30px,4vw,40px)] font-bold tracking-[-0.0204em] text-ink tnum mt-5 leading-none">
+              from {usd(p.priceFromUsd)}
+              {p.priceToUsd && p.priceToUsd !== p.priceFromUsd && (
+                <span className="text-muted font-semibold text-[24px]">
+                  {" "}
+                  to {usd(p.priceToUsd)}
+                </span>
+              )}
+            </p>
+          ) : (
+            <p className="mt-5 text-[16px] font-semibold text-muted">
+              No independently verified pricing
+            </p>
+          )}
 
           <dl className="mt-6 grid grid-cols-2 min-[560px]:grid-cols-4 gap-4 py-5 border-y border-line">
             {facts.map((f, i) => (
