@@ -17,45 +17,56 @@ import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
    coarsest split that is always true. Anything finer would need per-article
    copy that nobody will maintain.
 
-   SECOND: THE ASK IS SMALL. The contact form wants eleven fields and gets a
-   broker call in return, which is the right trade for a reader who has already
-   chosen a building. For a reader three paragraphs into a comparison guide it
-   is the wrong trade, and the site had nothing else to offer them. This asks
-   for a name and an email, and returns the guides we already wrote.
+   SECOND: THE ASK IS THE SERVICE, NOT A DOWNLOAD. What this site sells is
+   access to a licensed broker, so that is what the block asks, in the words a
+   reader would use: do you need a broker in Panama, do you need help finding a
+   property, do you need help relocating. A guide give-away would collect more
+   addresses and fewer buyers, and it would put a mailing list between the
+   reader and the only thing we can actually do for them.
 
-   What it must never do is promise something we do not send. The email that
-   answers a `brief` is assembled in lib/lead-notify.ts out of published guides
-   on this site. No document is promised that does not exist, and nobody is
-   told a broker will ring them when the form did not ask for a call.
+   The form is short because it sits in the middle of a guide, not because the
+   ask is small. Three fields is what a reader will fill in without leaving the
+   page; the contact form is still there for anyone ready to give a budget and
+   a timeline, and every block links to it.
+
+   Everyone who submits one of these has asked to be contacted, so they are
+   ordinary broker leads and are treated as such — see `article` in
+   lib/leads.ts. The only thing that makes them different is that nobody asked
+   them for a budget, and the broker's alert says so rather than leaving them
+   to discover it on the call.
    ============================================================================= */
 
 type Tone = "quiet" | "strong" | "rail";
 
 type Copy = { heading: string; body: string; button: string };
 
-/* One entry per category in lib/content.ts. The hook is the thing that page's
-   readers are actually deciding, stated the way the guides state it: what the
-   record says, and where the record is silent. */
+/* One entry per category in lib/content.ts. Each is the question that page's
+   readers are actually sitting on, asked plainly, and each answers it with the
+   one thing this site can do: put them with a licensed broker.
+
+   The buying and money guides are read by people looking for a property. The
+   residency and living guides are read by people working out whether to move
+   at all, so those ask about the move rather than the purchase. */
 const COPY: Record<string, Copy> = {
   buying: {
-    heading: "Before you pay a deposit",
-    body: "Not all land in Panama is titled, and the difference is not always disclosed up front. We'll email you the three guides that explain what to verify and what it costs to get it wrong.",
-    button: "Email me the three guides",
+    heading: "Do you need a broker in Panama?",
+    body: "We'll put you with a licensed one who actually works the area you're reading about. They'll tell you what's for sale, what it's really selling for, and which titles are clean before you commit to anything.",
+    button: "Talk to a broker",
   },
   money: {
-    heading: "What it actually costs",
-    body: "The official cost-of-living figures and what foreigners really spend are two different numbers. We'll email you the three guides that separate them, with the source for every figure attached.",
-    button: "Email me the three guides",
+    heading: "Do you need help finding a property in your budget?",
+    body: "Tell us roughly what you're working with and a licensed broker will come back with what it buys, where. No obligation, and nobody quotes you a price before you know the title status.",
+    button: "Talk to a broker",
   },
   residency: {
-    heading: "Which route you'd qualify for",
-    body: "Three residency routes, three different thresholds, and most of what's written about them online is describing rules that changed. We'll email you the guides that cite the current requirements.",
-    button: "Email me the guides",
+    heading: "Do you need help relocating to Panama?",
+    body: "A licensed broker can walk you through how the residency route you're reading about fits with buying or renting here, and what you'd need in place before you move.",
+    button: "Get help relocating",
   },
   living: {
-    heading: "Still deciding whether it's Panama",
-    body: "Most country comparisons repeat figures nobody sourced. We'll email you the guides that show where each number came from, so you can check them rather than trust us.",
-    button: "Email me the guides",
+    heading: "Do you need help relocating to Panama?",
+    body: "If you're weighing up the move, a licensed broker who lives here can tell you what the areas are really like to live in, and what your money does in each of them.",
+    button: "Get help relocating",
   },
 };
 
@@ -127,21 +138,13 @@ export function ArticleCta({
         {copy.body}
       </p>
 
-      <form
-        id={formId}
-        action="/api/lead"
-        method="post"
-        className={`mt-5 ${
-          tone === "quiet"
-            ? "grid gap-3 min-[560px]:grid-cols-[1fr_1fr_auto]"
-            : "flex flex-col gap-3"
-        }`}
-      >
-        {/* Marks this as a reader who wanted guides, not a call. The broker's
+      <form id={formId} action="/api/lead" method="post" className="mt-5">
+        {/* Marks the lead as having come from a guide rather than the contact
+            form: same wish for a broker, none of the qualifiers. The broker's
             alert and the confirmation email both branch on it. */}
-        <input type="hidden" name="intent" value="brief" />
+        <input type="hidden" name="intent" value="article" />
         {/* utm_*, gclid, fbclid, page_path, referrer. Without page_path we
-            could not tell which guide produced the address. */}
+            could not tell which guide produced the lead. */}
         <LeadAttribution />
         {isErrorTarget && <LeadFormError />}
 
@@ -151,50 +154,74 @@ export function ArticleCta({
           <input id={`${formId}-bot`} name="bot-field" tabIndex={-1} />
         </div>
 
-        <label className="sr-only" htmlFor={`${formId}-name`}>
-          First name
-        </label>
-        <input
-          id={`${formId}-name`}
-          name="full_name"
-          required
-          autoComplete="given-name"
-          placeholder="First name"
-          className={field}
-        />
+        {/* Three across where there is room for it, stacked in the rail and in
+            the narrower dark block at the foot of the article. */}
+        <div
+          className={
+            tone === "quiet"
+              ? "grid gap-3 min-[620px]:grid-cols-3"
+              : "flex flex-col gap-3"
+          }
+        >
+          <label className="sr-only" htmlFor={`${formId}-name`}>
+            Name
+          </label>
+          <input
+            id={`${formId}-name`}
+            name="full_name"
+            required
+            autoComplete="name"
+            placeholder="Name"
+            className={field}
+          />
 
-        <label className="sr-only" htmlFor={`${formId}-email`}>
-          Email
-        </label>
-        <input
-          id={`${formId}-email`}
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="Email"
-          className={field}
-        />
+          <label className="sr-only" htmlFor={`${formId}-email`}>
+            Email
+          </label>
+          <input
+            id={`${formId}-email`}
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="Email"
+            className={field}
+          />
+
+          {/* Optional, and deliberately offered: this market runs on WhatsApp,
+              and /api/lead accepts a phone number in place of an email. */}
+          <label className="sr-only" htmlFor={`${formId}-phone`}>
+            Phone or WhatsApp
+          </label>
+          <input
+            id={`${formId}-phone`}
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="Phone or WhatsApp"
+            className={field}
+          />
+        </div>
 
         <button
           type="submit"
-          className="font-display text-[15.5px] font-bold px-6 py-3 rounded-sm bg-accent text-brand-900 hover:bg-accent-600 hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+          className={`mt-3 font-display text-[15.5px] font-bold px-6 py-3 rounded-sm bg-accent text-brand-900 hover:bg-accent-600 hover:text-white transition-colors cursor-pointer ${
+            tone === "quiet" ? "w-full min-[620px]:w-auto" : "w-full"
+          }`}
         >
           {copy.button}
         </button>
       </form>
 
-      {/* The honest small print, and the escape hatch to the real form for
-          anyone further along than this block assumes. A reader who already
-          has a building in mind should not have to convert through the
-          researcher's door. */}
+      {/* What happens to the details, in the same words the contact form and
+          the footer use. Someone handing over a phone number in the middle of
+          an article is owed that before they do it, not after. */}
       <p
         className={`mt-4 text-[13.5px] leading-relaxed ${
           dark ? "text-white/60" : "text-muted"
         }`}
       >
-        The guides and nothing else. No newsletter, and we don&rsquo;t pass your
-        address to a broker unless you ask us to.
+        Email or phone, whichever you&rsquo;d rather. We pass your details to one
+        licensed broker and no one else, and there&rsquo;s no newsletter.
       </p>
       <p className={`mt-3 text-[14px] ${dark ? "text-white/80" : "text-body"}`}>
         <Link
@@ -203,8 +230,8 @@ export function ArticleCta({
             dark ? "text-accent" : "text-link"
           }`}
         >
-          Looking at a specific property? Get a shortlist with the title status
-          attached →
+          Know your budget and timeline already? Send those instead and get a
+          shortlist →
         </Link>
       </p>
     </section>

@@ -39,9 +39,9 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
 export type LeadRow = {
   id: string;
   reference: string;
-  /** What they asked for. A `brief` gave an email in exchange for guides and
-   *  was told nobody would call, so the queue has to show it — see
-   *  0006_lead_intent.sql. */
+  /** Which form produced it. An `article` lead wants a broker like any other
+   *  but was never asked for a budget or timeline, so the queue has to show
+   *  that before someone opens the call — see 0006_lead_intent.sql. */
   intent: LeadIntent;
   full_name: string;
   email: string | null;

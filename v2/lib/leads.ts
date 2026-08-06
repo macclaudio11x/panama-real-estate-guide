@@ -23,12 +23,12 @@ import { supabaseAdmin } from "./supabase";
    ------------------------------------------------------------------------- */
 
 /* ── Intent ─────────────────────────────────────────────────────────────────
-   What the person actually asked for, which is not the same as how good the
-   lead is. See 0006_lead_intent.sql: a `brief` is a reader who gave an email
-   in exchange for guides and has not asked anyone to call them.
+   Which form produced the lead, and therefore how much is known about it. See
+   0006_lead_intent.sql: all three want a broker to get in touch, but only
+   `shortlist` and `project` arrive with anything to prepare from.
    ------------------------------------------------------------------------- */
 
-export const LEAD_INTENTS = ["shortlist", "project", "brief"] as const;
+export const LEAD_INTENTS = ["shortlist", "project", "article"] as const;
 export type LeadIntent = (typeof LEAD_INTENTS)[number];
 
 /** Unknown values fall back to `shortlist` rather than being rejected. The
@@ -274,11 +274,10 @@ export async function logIntake(lead: SavedLead, input: LeadInput): Promise<void
     : input.page_path ?? "the site";
   const campaign = input.utm_campaign ? ` · campaign ${input.utm_campaign}` : "";
   /* Spelt out rather than logged as the raw enum: this line is read by whoever
-     picks the lead up, and "asked for guides by email" tells them not to dial
-     in a way that "intent=brief" does not. */
+     picks the lead up, and it needs to say what was and wasn't asked for. */
   const asked =
-    input.intent === "brief"
-      ? "Asked for guides by email — has not requested a call"
+    input.intent === "article"
+      ? "Asked for a broker from a guide — no budget or timeline collected"
       : "Asked for a broker shortlist";
   await supabaseAdmin()
     .from("lead_events")

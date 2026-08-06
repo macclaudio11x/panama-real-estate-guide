@@ -34,16 +34,16 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
 /* What a conversion is worth to the bidder.
    =============================================================================
    Both ad platforms optimise towards value, so reporting one number for every
-   submission teaches them to buy whatever is cheapest — which is the reader who
-   wanted a PDF, not the buyer. An email from an article is genuinely worth less
-   than a budgeted enquiry, and saying so is what stops the campaigns drifting
-   towards the cheaper one.
+   submission teaches them to buy whichever lead is cheapest to produce. An
+   unqualified enquiry off a guide is a real lead and is counted as one, but it
+   closes less often than someone who arrived with a budget and a timeline, and
+   the bidding should know the difference.
 
-   ⚠️ The 50 was already a placeholder before this split, and 10 is a placeholder
+   ⚠️ The 50 was already a placeholder before this split, and 30 is a placeholder
    beside it. Neither is measured. Replace both with lead-to-close rates once
    there are enough closes to divide by. */
 function conversionValue(intent: LeadInput["intent"]): number {
-  return intent === "brief" ? 10 : 50;
+  return intent === "article" ? 30 : 50;
 }
 
 /* ── Meta Conversions API ───────────────────────────────────────────────────
@@ -156,17 +156,17 @@ async function sendTelegramAlert(lead: SavedLead, input: LeadInput): Promise<voi
 
   const line = (label: string, value: string | null) => (value ? `${label}: ${value}\n` : "");
 
-  /* A brief is a reader who wanted guides, and the form told them nobody would
-     ring. An alert that looks identical to a shortlist request is how that
-     promise gets broken by someone acting in good faith on a notification, so
-     the difference is the first thing in the message and the qualifier line is
-     replaced by the instruction. */
-  const brief = input.intent === "brief";
-  const header = brief
-    ? `📗 Guide request: ${input.full_name}\n` +
-      `Asked for guides by email. Do not call — they were told nobody would.\n\n`
-    : `🏠 New lead: ${input.full_name}\n` +
-      `${input.budget_band ?? "budget not given"} · ${input.timeline ?? "timeline not given"}\n\n`;
+  /* An article lead wants a broker as much as any other, so this is still a
+     call to make. What it is not is a call to make prepared: the in-guide form
+     never asks for a budget or a timeline, and the second line says so plainly
+     rather than leaving a blank qualifier line to be read as an evasive
+     answer. */
+  const header =
+    input.intent === "article"
+      ? `🏠 New lead: ${input.full_name}\n` +
+        `From a guide — no budget or timeline asked for. Qualify on the call.\n\n`
+      : `🏠 New lead: ${input.full_name}\n` +
+        `${input.budget_band ?? "budget not given"} · ${input.timeline ?? "timeline not given"}\n\n`;
 
   const text =
     header +
@@ -223,15 +223,15 @@ const DEFAULT_GUIDES: readonly Guide[] = [
   ["Panama residency: the three routes", "/residency/panama-residency-guide"],
 ];
 
-/* What a `brief` actually delivers.
+/* Reading material for an article lead, chosen by what they were reading.
    =============================================================================
-   The article forms promise "the three guides" for the category being read, so
-   this is the promise, written down. Every path below is a published guide on
-   this site — the offer is a curated set of things we already wrote, which is
-   why it can be made honestly with nothing new to produce.
+   Not an offer and not the reason they filled the form in — they asked for a
+   broker, and the email leads with the broker. These go underneath it, because
+   the gap between submitting a form and a broker picking up the phone is dead
+   time that may as well be useful, and because a reader of the money guides is
+   better served by the other money guides than by a generic set.
 
-   Keep this in step with the copy in components/article-cta.tsx: if a category
-   there says "three guides", the set here has three entries. */
+   Every path is a published guide on this site. Nothing here is gated. */
 const GUIDE_SETS: Record<string, readonly Guide[]> = {
   buying: [
     ["Titled land vs. Rights of Possession", "/buying/titled-vs-rights-of-possession"],
@@ -272,37 +272,50 @@ export function renderClientWelcome(
   const firstName = input.full_name.split(" ")[0];
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  /* ── The `brief` reply ────────────────────────────────────────────────────
-     Someone who typed their name and email into an article asked for guides.
-     They did not ask for a broker, were told in as many words that they would
-     not get one, and sending the shortlist email to them would break that
-     promise on first contact — the same reasoning that keeps this whole file
-     transactional rather than a newsletter.
+  /* ── The `article` reply ──────────────────────────────────────────────────
+     Someone asked for a broker from the middle of a guide. They get the same
+     promise as anyone else, because they made the same request — the only
+     difference is that a three-field box never asked their budget or timeline,
+     so a shortlist cannot be built from what we hold.
 
-     So this delivers the thing, says what will not happen, and points at the
-     real form for anyone who wants more. No reference number: there is no
-     enquiry for it to reference. */
-  if (input.intent === "brief") {
+     Rather than pretend otherwise, this says a broker is coming, names the one
+     thing that would speed it up, and links the full form. The guides for
+     whatever they were reading go at the bottom, as something to do while they
+     wait rather than as the thing they signed up for. */
+  if (input.intent === "article") {
     const guides = guidesFor(input.page_path);
 
-    const briefText =
+    const articleText =
       `Hi ${firstName},\n\n` +
-      `Here are the guides, as promised.\n\n` +
+      `Thanks for getting in touch. We have your details, and your reference is ${lead.reference}.\n\n` +
+      `A licensed broker will follow up, usually within one business day.\n\n` +
+      `One thing that would help them: we don't yet know your budget, your timeline, or which ` +
+      `part of the country you have in mind. Reply to this email with any of it, or fill in the ` +
+      `longer form here and they'll arrive with a shortlist already put together:\n${SITE}/contact\n\n` +
+      `Worth knowing before you speak to anyone: not all land in Panama is titled. Some is held ` +
+      `under Rights of Possession, which is a weaker claim than ownership and is not always ` +
+      `disclosed up front. We say which is which on every project we list.\n\n` +
+      `While you wait, these are the guides that go with what you were reading:\n\n` +
       guides.map(([title, path]) => `${title}\n${SITE}${path}\n`).join("\n") +
-      `\nEvery figure in them is sourced, and the source is linked at the bottom of each one. ` +
-      `Where nobody publishes a number, we say that instead of estimating it.\n\n` +
-      `One thing worth knowing early: not all land in Panama is titled. Some is held under ` +
-      `Rights of Possession, which is a weaker claim than ownership and is not always disclosed ` +
-      `up front. We say which is which on every project we list.\n\n` +
-      `That's everything. You're not on a mailing list, and nobody is going to call you. ` +
-      `If you'd like a shortlist put together and a licensed broker to talk it through, that's ` +
-      `here: ${SITE}/contact\n\n` +
+      `\nWe pass your details to one licensed broker and nobody else, and there's no mailing ` +
+      `list. Reply to this email if anything changes or you'd rather we didn't.\n\n` +
       `Panama Real Estate Guide\n${SITE}\n`;
 
-    const briefHtml =
+    const articleHtml =
       `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#1f262b;max-width:560px">` +
       `<p>Hi ${esc(firstName)},</p>` +
-      `<p>Here are the guides, as promised.</p><ul>` +
+      `<p>Thanks for getting in touch. We have your details, and your reference is ` +
+      `<strong style="font-family:ui-monospace,monospace">${esc(lead.reference)}</strong>.</p>` +
+      `<p>A licensed broker will follow up, usually within one business day.</p>` +
+      `<p><strong>One thing that would help them.</strong> We don&rsquo;t yet know your budget, ` +
+      `your timeline, or which part of the country you have in mind. Reply to this email with ` +
+      `any of it, or fill in <a href="${SITE}/contact" style="color:#0b4f6c">the longer form</a> ` +
+      `and they&rsquo;ll arrive with a shortlist already put together.</p>` +
+      `<p style="border-left:3px solid #e8a33d;padding-left:14px">Worth knowing before you speak ` +
+      `to anyone: not all land in Panama is titled. Some is held under Rights of Possession, ` +
+      `which is a weaker claim than ownership and is not always disclosed up front. We say which ` +
+      `is which on every project we list.</p>` +
+      `<p><strong>While you wait</strong></p><ul>` +
       guides
         .map(
           ([title, path]) =>
@@ -310,20 +323,17 @@ export function renderClientWelcome(
         )
         .join("") +
       `</ul>` +
-      `<p>Every figure in them is sourced, and the source is linked at the bottom of each one. ` +
-      `Where nobody publishes a number, we say that instead of estimating it.</p>` +
-      `<p style="border-left:3px solid #e8a33d;padding-left:14px">One thing worth knowing early: ` +
-      `not all land in Panama is titled. Some is held under Rights of Possession, which is a ` +
-      `weaker claim than ownership and is not always disclosed up front. We say which is which ` +
-      `on every project we list.</p>` +
-      `<p style="color:#5b646b;font-size:14px">That&rsquo;s everything. You&rsquo;re not on a ` +
-      `mailing list, and nobody is going to call you. If you&rsquo;d like a shortlist put ` +
-      `together and a licensed broker to talk it through, that&rsquo;s ` +
-      `<a href="${SITE}/contact" style="color:#0b4f6c">here</a>.</p>` +
+      `<p style="color:#5b646b;font-size:14px">We pass your details to one licensed broker and ` +
+      `nobody else, and there&rsquo;s no mailing list. Reply to this email if anything changes ` +
+      `or you&rsquo;d rather we didn&rsquo;t.</p>` +
       `<p style="color:#5b646b;font-size:14px"><a href="${SITE}" style="color:#0b4f6c">Panama Real Estate Guide</a></p>` +
       `</div>`;
 
-    return { subject: "The guides you asked for", text: briefText, html: briefHtml };
+    return {
+      subject: `We have your details (${lead.reference})`,
+      text: articleText,
+      html: articleHtml,
+    };
   }
 
   const GUIDES = DEFAULT_GUIDES;

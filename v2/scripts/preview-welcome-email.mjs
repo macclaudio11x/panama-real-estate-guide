@@ -10,8 +10,8 @@
      node scripts/preview-welcome-email.mjs               # writes preview.html
      node scripts/preview-welcome-email.mjs --text        # plain-text version
      node scripts/preview-welcome-email.mjs --name "Ana"
-     node scripts/preview-welcome-email.mjs --brief       # the article-capture reply
-     node scripts/preview-welcome-email.mjs --brief --category money
+     node scripts/preview-welcome-email.mjs --article     # the in-guide enquiry reply
+     node scripts/preview-welcome-email.mjs --article --category money
 
    Requires Node 22+ for native TypeScript type-stripping; the import below is
    a .ts file. lib/lead-notify.ts imports only types from ./leads, so nothing
@@ -30,9 +30,9 @@ const nameFlag = args.indexOf("--name");
 const full_name = nameFlag !== -1 ? args[nameFlag + 1] : "Sarah Whitfield";
 
 /* Two emails send now, so both have to be previewable or the claim above stops
-   being true. --brief renders the reply to an article capture; --category picks
-   which set of guides it promises, since that is the part most likely to rot. */
-const brief = args.includes("--brief");
+   being true. --article renders the reply to an in-guide enquiry; --category
+   picks which guides it links, since those are the part most likely to rot. */
+const article = args.includes("--article");
 const categoryFlag = args.indexOf("--category");
 const category = categoryFlag !== -1 ? args[categoryFlag + 1] : "buying";
 
@@ -40,7 +40,7 @@ const { subject, text, html } = renderClientWelcome(
   { id: "00000000-0000-0000-0000-000000000000", reference: "PRG-2026-104829" },
   {
     full_name,
-    intent: brief ? "brief" : "shortlist",
+    intent: article ? "article" : "shortlist",
     page_path: `/${category}/some-guide`,
   },
 );
