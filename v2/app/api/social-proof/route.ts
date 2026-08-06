@@ -37,10 +37,11 @@ export const dynamic = "force-dynamic";
  *  enough that "recently" is not a stretch. */
 const WINDOW_DAYS = 30;
 
-/** Below this the count is not shown at all. Two enquiries is not evidence
- *  that anyone else is interested, and printing it reads as an admission. Raise
- *  it once there is real volume; never lower it to make something appear. */
-const MIN_TO_SHOW = 5;
+/** At or above this the count is printed as a number. Below it there is still
+ *  something true to say — see `line()` — it just isn't a figure, because
+ *  "2 people" printed in a proof slot reads as an admission rather than a
+ *  recommendation. Raise this once there is real volume. */
+const COUNT_FROM = 5;
 
 type Target =
   | { kind: "area"; slug: string }
@@ -81,13 +82,35 @@ export async function GET(req: Request) {
      on a page that already works; it must never be the thing that breaks. */
   const enquiries = error ? 0 : (count ?? 0);
 
-  if (enquiries >= MIN_TO_SHOW) {
-    return NextResponse.json({
-      line: `${enquiries} people have asked us about ${row.name} in the last 30 days.`,
-    });
-  }
+  return NextResponse.json({ line: line(enquiries, row.name) });
+}
 
-  return NextResponse.json({
-    line: `Asking about ${row.name}? A licensed broker usually replies within a business day.`,
-  });
+/* =============================================================================
+   Saying something true at every volume
+   =============================================================================
+   The honest problem with a real counter is that it starts small, and a real
+   small number in a proof slot is worse than no number. The tiers below are the
+   answer to that, and every one of them describes rows that exist:
+
+     5+    the figure, because at that point it is worth quoting
+     2–4   that other people asked, without a number attached
+     1     that someone did, singular, because "others" would not be true
+     0     no claim about demand at all, just what we will do if they write
+
+   Note what the middle tiers are not. "Others have asked about Boquete this
+   month" with two rows behind it is vague, and vague is fine. It would only
+   become a lie if there were nothing behind it, which is the whole reason the
+   zero case says something else entirely rather than rounding up to "others".
+   ============================================================================= */
+function line(enquiries: number, name: string): string {
+  if (enquiries >= COUNT_FROM) {
+    return `${enquiries} people have asked us about ${name} in the last 30 days.`;
+  }
+  if (enquiries > 1) {
+    return `Other buyers have asked us for help with ${name} this month.`;
+  }
+  if (enquiries === 1) {
+    return `Another buyer asked us for help with ${name} this month.`;
+  }
+  return `Asking about ${name}? A licensed broker usually replies within a business day.`;
 }

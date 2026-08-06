@@ -360,8 +360,18 @@ export default async function ArticlePage({
           <ArticleCta category={category} tone="strong" formId="lead-form" />
         </article>
 
-        {/* ── Sticky sidebar ─────────────────────────────────────────────── */}
-        <aside className="hidden min-[860px]:grid sticky top-[110px] gap-6 content-start">
+        {/* ── Sidebar ────────────────────────────────────────────────────────
+            The column itself is NOT sticky, only the CTA inside it is.
+
+            It used to be the other way round, which worked while the rail held
+            a two-line card and a button. The card is now a form, and a long
+            table of contents plus a form is taller than most viewports: pinning
+            the whole column at top-110px meant everything above the fold of it
+            — the heading and all three fields — sat behind the header and could
+            never be scrolled to. Letting the contents list scroll away and
+            pinning only the form keeps the sticky thing shorter than the
+            screen, which is the condition sticky positioning actually needs. */}
+        <aside className="hidden min-[860px]:grid gap-6 content-start">
           {sections.length > 0 && (
             <nav className="border-y border-line py-5">
               <p className="font-display text-[13px] font-bold uppercase tracking-[0.077em] text-ink">
@@ -382,7 +392,9 @@ export default async function ArticlePage({
             </nav>
           )}
 
-          <ArticleCta category={category} tone="rail" formId="lead-form-rail" />
+          <div className="sticky top-[110px]">
+            <ArticleCta category={category} tone="rail" formId="lead-form-rail" />
+          </div>
         </aside>
       </div>
 
