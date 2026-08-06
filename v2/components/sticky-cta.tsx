@@ -34,10 +34,14 @@ import { useEffect, useState } from "react";
  *  read, and interrupting them is how a CTA becomes wallpaper. */
 const SHOW_AFTER_PX = 600;
 
+/** Shown everywhere that has nothing more specific to say. */
+const DEFAULT_LINE = "Need a broker in Panama?";
+
 export function StickyCta() {
   const pathname = usePathname();
   const [scrolledEnough, setScrolledEnough] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const [line, setLine] = useState(DEFAULT_LINE);
 
   const suppressed = pathname.startsWith("/contact");
 
@@ -69,9 +73,25 @@ export function StickyCta() {
     });
     targets.forEach((t) => observer.observe(t));
 
+    /* The area- or project-specific line, when the page has one. Reset first,
+       so a line fetched for the previous route cannot survive a navigation and
+       name the wrong place. Failures are silent and leave the default: a bar
+       that says something general is fine, a bar that says nothing is not. */
+    setLine(DEFAULT_LINE);
+    const cancelled = new AbortController();
+    fetch(`/api/social-proof?path=${encodeURIComponent(pathname)}`, {
+      signal: cancelled.signal,
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (typeof data?.line === "string") setLine(data.line);
+      })
+      .catch(() => {});
+
     return () => {
       window.removeEventListener("scroll", onScroll);
       observer.disconnect();
+      cancelled.abort();
     };
   }, [pathname, suppressed]);
 
@@ -91,14 +111,14 @@ export function StickyCta() {
     >
       <div className="flex items-center gap-3 border-t border-white/10 bg-brand-800 px-4 py-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(4,32,45,0.22)]">
         <p className="min-w-0 flex-1 text-[13.5px] leading-snug text-white/85">
-          Need a broker in Panama?
+          {line}
         </p>
         <Link
           href="/contact"
           tabIndex={visible ? undefined : -1}
           className="shrink-0 rounded-sm bg-accent px-4 py-2.5 font-display text-[14.5px] font-bold text-brand-900 no-underline hover:bg-accent-600 hover:text-white transition-colors"
         >
-          Talk to a broker
+          Contact us
         </Link>
       </div>
     </div>
