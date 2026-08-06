@@ -479,6 +479,9 @@ export default async function ProjectPage({
               {/* Attribution: which page produced this lead. */}
               <input type="hidden" name="project" value={p.slug} />
               <input type="hidden" name="area" value={area?.name ?? ""} />
+              {/* Asking about a named development is the warmest signal on the
+                  site. See 0006_lead_intent.sql. */}
+              <input type="hidden" name="intent" value="project" />
               {/* Campaign attribution — utm_*, gclid, fbclid, referrer. */}
               <LeadAttribution />
               <LeadFormError />

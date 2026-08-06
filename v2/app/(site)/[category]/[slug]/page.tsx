@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { categories } from "@/lib/content";
 import { listArticles, relatedArticles } from "@/lib/articles";
 import { getArticleFull } from "@/lib/editorial";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
 import { ArticleChart, parseChartSpec } from "@/components/article-chart";
-import { Button } from "@/components/ui";
+import { ArticleCta } from "@/components/article-cta";
 
 /* Supabase is the source of truth for article content, so the routes have to
    re-read it. 60s means an edit made through the MCP is live within a minute
@@ -64,6 +64,57 @@ function extractHeadings(markdown: string) {
   return matches.map((m) => ({ id: slugify(m[1]), label: m[1] }));
 }
 
+/* =============================================================================
+   Where the mid-article CTA goes
+   =============================================================================
+   At the `##` nearest the middle, so a reader who leaves at 60% has still been
+   asked once. Splitting on a heading rather than a paragraph count is what
+   keeps it from landing between a sentence and the table that proves it.
+
+   Articles with fewer than four headings are returned whole and get no mid
+   block. Under roughly a thousand words the end-of-article CTA is already in
+   view, and a capture form two screens into a short guide interrupts more than
+   it converts.
+   ============================================================================= */
+function splitForCta(markdown: string): [string, string | null] {
+  const headings = [...markdown.matchAll(/^##\s+.+$/gm)];
+  if (headings.length < 4) return [markdown, null];
+
+  const at = headings[Math.floor(headings.length / 2)].index;
+  if (at === undefined || at === 0) return [markdown, null];
+
+  return [markdown.slice(0, at), markdown.slice(at)];
+}
+
+/* Hoisted so both halves of a split body render identically. Inline in the JSX
+   this was a fresh object per block, which is also how the two halves would
+   drift apart the first time one was edited. */
+const markdownComponents: Components = {
+  h2: ({ children }) => <h2 id={slugify(String(children))}>{children}</h2>,
+  table: ({ children }) => (
+    <div className="table-scroll">
+      <table>{children}</table>
+    </div>
+  ),
+  /* ```chart blocks render as a figure. Intercepted at `pre` rather than
+     `code` because react-markdown wraps fenced code in <pre>, and a <figure>
+     inside <pre> is invalid HTML that would also inherit monospace styling.
+     Reads the hast node so the raw JSON is available before React escapes it.
+     Anything that is not a valid chart falls through to a normal code block,
+     so a typo shows the JSON rather than breaking the page. */
+  pre: ({ node, children }) => {
+    const code = node?.children?.[0];
+    const cls = code?.type === "element" ? code.properties?.className : null;
+    const isChart = Array.isArray(cls) && cls.includes("language-chart");
+    if (isChart && code?.type === "element") {
+      const first = code.children?.[0];
+      const spec = first?.type === "text" ? parseChartSpec(first.value) : null;
+      if (spec) return <ArticleChart spec={spec} />;
+    }
+    return <pre>{children}</pre>;
+  },
+};
+
 export default async function ArticlePage({
   params,
 }: {
@@ -76,6 +127,7 @@ export default async function ArticlePage({
   const cat = categories.find((c) => c.slug === category);
   const related = await relatedArticles(category, slug);
   const sections = article.body ? extractHeadings(article.body) : [];
+  const [bodyTop, bodyRest] = splitForCta(article.body ?? "");
   const reviewedForAccuracy = Boolean(article.reviewer && article.reviewedOn);
 
   const jsonLd = {
@@ -222,51 +274,39 @@ export default async function ArticlePage({
               className="w-full h-auto rounded-md mb-[clamp(20px,3vw,32px)]"
             />
           )}
-          <div className="prose">
-            {article.body ? (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  h2: ({ children }) => (
-                    <h2 id={slugify(String(children))}>{children}</h2>
-                  ),
-                  table: ({ children }) => (
-                    <div className="table-scroll">
-                      <table>{children}</table>
-                    </div>
-                  ),
-                  /* ```chart blocks render as a figure. Intercepted at `pre`
-                     rather than `code` because react-markdown wraps fenced code
-                     in <pre>, and a <figure> inside <pre> is invalid HTML that
-                     would also inherit monospace styling. Reads the hast node
-                     so the raw JSON is available before React escapes it.
-                     Anything that is not a valid chart falls through to a
-                     normal code block, so a typo shows the JSON rather than
-                     breaking the page. */
-                  pre: ({ node, children }) => {
-                    const code = node?.children?.[0];
-                    const cls =
-                      code?.type === "element" ? code.properties?.className : null;
-                    const isChart =
-                      Array.isArray(cls) && cls.includes("language-chart");
-                    if (isChart && code?.type === "element") {
-                      const first = code.children?.[0];
-                      const spec =
-                        first?.type === "text"
-                          ? parseChartSpec(first.value)
-                          : null;
-                      if (spec) return <ArticleChart spec={spec} />;
-                    }
-                    return <pre>{children}</pre>;
-                  },
-                }}
-              >
-                {article.body}
-              </ReactMarkdown>
-            ) : (
-              <p className="text-muted">This guide hasn&rsquo;t been written yet.</p>
-            )}
+          {/* The body renders as one or two `.prose` blocks. Two when a mid
+              article CTA is going between them: `.prose` styles its
+              descendants by element (`.prose a`, `.prose h2`), so a capture
+              block nested inside would inherit link colours and heading sizes
+              meant for editorial copy. Sitting between two blocks, it inherits
+              nothing. */}
+          {article.body ? (
+            <>
+              <div className="prose">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {bodyTop}
+                </ReactMarkdown>
+              </div>
+              {bodyRest && (
+                <>
+                  <ArticleCta
+                    category={category}
+                    tone="quiet"
+                    formId="lead-form-inline"
+                  />
+                  <div className="prose">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {bodyRest}
+                    </ReactMarkdown>
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <p className="prose text-muted">This guide hasn&rsquo;t been written yet.</p>
+          )}
 
+          <div className="prose">
             {article.faqs.length > 0 && (
               <>
                 <h2 id="faq">Frequently asked questions</h2>
@@ -313,6 +353,11 @@ export default async function ArticlePage({
               </div>
             )}
           </div>
+
+          {/* The one CTA every reader reaches, on every breakpoint. The rail
+              below is desktop-only, so before this existed a mobile reader
+              finished a guide and was offered nothing but the next guide. */}
+          <ArticleCta category={category} tone="strong" formId="lead-form" />
         </article>
 
         {/* ── Sticky sidebar ─────────────────────────────────────────────── */}
@@ -337,18 +382,7 @@ export default async function ArticlePage({
             </nav>
           )}
 
-          <div className="rounded-md p-[22px] bg-brand-800 text-white">
-            <h3 className="font-display text-[19px] font-bold text-white leading-tight">
-              Checking title on a specific property?
-            </h3>
-            <p className="mt-2.5 text-[14.5px] text-white/85 leading-relaxed">
-              Send us the listing. We&rsquo;ll tell you what to ask for before
-              you pay a deposit.
-            </p>
-            <Button href="/contact" className="mt-4 w-full">
-              Get a check
-            </Button>
-          </div>
+          <ArticleCta category={category} tone="rail" formId="lead-form-rail" />
         </aside>
       </div>
 

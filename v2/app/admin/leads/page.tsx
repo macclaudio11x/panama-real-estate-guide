@@ -91,6 +91,15 @@ export default async function LeadsInbox({
                     >
                       {lead.full_name}
                     </Link>
+                    {/* Without this a guide request reads as a buyer who
+                        couldn't be bothered to fill the form in: same row, same
+                        empty budget and timeline. They were told nobody would
+                        call, so the queue has to say so before someone dials. */}
+                    {lead.intent === "brief" && (
+                      <span className="mt-1 block w-fit rounded-sm border border-line bg-paper-warm px-1.5 py-px font-mono text-[10px] uppercase tracking-[0.077em] text-muted">
+                        Guides only · no call
+                      </span>
+                    )}
                     <p className="mt-0.5 font-mono text-[11px] text-faint">{lead.reference}</p>
                   </td>
                   <td className="px-4 py-3 text-body">

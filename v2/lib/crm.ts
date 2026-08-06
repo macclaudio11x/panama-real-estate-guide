@@ -12,6 +12,7 @@
    ============================================================================= */
 
 import { supabaseAdmin } from "./supabase";
+import type { LeadIntent } from "./leads";
 
 export const LEAD_STATUSES = [
   "new",
@@ -38,6 +39,10 @@ export const STATUS_LABEL: Record<LeadStatus, string> = {
 export type LeadRow = {
   id: string;
   reference: string;
+  /** What they asked for. A `brief` gave an email in exchange for guides and
+   *  was told nobody would call, so the queue has to show it — see
+   *  0006_lead_intent.sql. */
+  intent: LeadIntent;
   full_name: string;
   email: string | null;
   phone: string | null;
@@ -77,7 +82,7 @@ export type LeadEvent = {
 };
 
 const LEAD_COLUMNS = `
-  id, reference, full_name, email, phone, country,
+  id, reference, intent, full_name, email, phone, country,
   budget_band, timeline, financing, residency_interest, notes,
   status, next_action_at, lost_reason,
   page_path, utm_source, utm_medium, utm_campaign, utm_content, utm_term,

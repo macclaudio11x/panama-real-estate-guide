@@ -58,17 +58,37 @@ export default function ContactPage() {
 
             {/* utm_*, gclid, fbclid, page_path, referrer — see the component. */}
             <LeadAttribution />
+            {/* This form is the one that asks for a broker call. See
+                0006_lead_intent.sql for why that is recorded rather than
+                assumed. */}
+            <input type="hidden" name="intent" value="shortlist" />
 
             <fieldset className="border-0 p-0 m-0">
-              <legend className="font-display text-[19px] font-bold text-ink mb-5">
+              <legend className="font-display text-[19px] font-bold text-ink mb-2">
                 How to reach you
               </legend>
+              {/* `email` used to be a required input while the database and
+                  /api/lead both accept an email OR a phone number
+                  (`lead_needs_a_contact_method` in 0001_init.sql). The form was
+                  stricter than the thing behind it, and the people it turned
+                  away were the WhatsApp-first buyers this market is full of.
+                  The server still enforces that one of the two is present. */}
+              <p className="text-[15px] text-muted mb-5 max-w-[52ch]">
+                An email or a phone number, whichever you&rsquo;d rather we
+                used. One of the two is enough.
+              </p>
               <div className="grid gap-5 min-[560px]:grid-cols-2">
                 <div>
                   <label className={label} htmlFor="name">
                     Name
                   </label>
-                  <input id="name" name="full_name" required className={field} />
+                  <input
+                    id="name"
+                    name="full_name"
+                    required
+                    autoComplete="name"
+                    className={field}
+                  />
                 </div>
                 <div>
                   <label className={label} htmlFor="email">
@@ -78,7 +98,7 @@ export default function ContactPage() {
                     id="email"
                     name="email"
                     type="email"
-                    required
+                    autoComplete="email"
                     className={field}
                   />
                 </div>
@@ -86,13 +106,24 @@ export default function ContactPage() {
                   <label className={label} htmlFor="phone">
                     Phone or WhatsApp
                   </label>
-                  <input id="phone" name="phone" type="tel" className={field} />
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    className={field}
+                  />
                 </div>
                 <div>
                   <label className={label} htmlFor="country">
                     Where you live now
                   </label>
-                  <input id="country" name="country" className={field} />
+                  <input
+                    id="country"
+                    name="country"
+                    autoComplete="country-name"
+                    className={field}
+                  />
                 </div>
               </div>
             </fieldset>
@@ -101,9 +132,17 @@ export default function ContactPage() {
               <legend className="font-display text-[19px] font-bold text-ink mb-2">
                 What you&rsquo;re looking for
               </legend>
+              {/* Six optional questions used to sit open on the page under this
+                  legend, which made a two-minute form look like a mortgage
+                  application at the moment someone decides whether to start it.
+                  Budget and timeline stay visible because they are what decide
+                  whether a broker can build a shortlist at all; the rest moved
+                  into the disclosure below. Nothing was removed, and no field
+                  changed its name, so the broker still gets everything anyone
+                  chooses to fill in. */}
               <p className="text-[15px] text-muted mb-5 max-w-[52ch]">
-                These four answers are what let us rule areas out for you
-                instead of sending a generic list.
+                These two answers are what let us rule areas out for you instead
+                of sending a generic list.
               </p>
 
               <div className="grid gap-5 min-[560px]:grid-cols-2">
@@ -132,48 +171,61 @@ export default function ContactPage() {
                     <option>Just researching</option>
                   </select>
                 </div>
-                <div>
-                  <label className={label} htmlFor="financing">
-                    Cash or financing
-                  </label>
-                  <select id="financing" name="financing" className={field}>
-                    <option value="">Select one</option>
-                    <option>Cash</option>
-                    <option>Need financing</option>
-                    <option>Undecided</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={label} htmlFor="residency">
-                    Residency interest
-                  </label>
-                  <select id="residency" name="residency" className={field}>
-                    <option value="">Select one</option>
-                    <option>Yes — residency is a goal</option>
-                    <option>No — purchase only</option>
-                    <option>Want to understand the options</option>
-                  </select>
-                </div>
               </div>
 
-              <div className="mt-5">
-                <label className={label} htmlFor="area">
-                  Areas you&rsquo;re considering
-                </label>
-                <select id="area" name="area" className={field}>
-                  <option value="">No preference yet</option>
-                  {areas.map((a) => (
-                    <option key={a.slug}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Native <details>, so this opens with JavaScript disabled — the
+                  same reason the form itself posts natively. A closed field is
+                  still submitted, so anything typed here and then collapsed is
+                  not silently dropped. */}
+              <details className="mt-6 rounded-sm border border-line bg-paper-warm px-5 py-4 [&[open]>summary]:mb-5">
+                <summary className="cursor-pointer font-display text-[15px] font-bold text-brand marker:text-accent">
+                  Add more detail, and we&rsquo;ll narrow it further
+                </summary>
 
-              <div className="mt-5">
-                <label className={label} htmlFor="notes">
-                  Anything else
-                </label>
-                <textarea id="notes" name="notes" rows={4} className={field} />
-              </div>
+                <div className="grid gap-5 min-[560px]:grid-cols-2">
+                  <div>
+                    <label className={label} htmlFor="financing">
+                      Cash or financing
+                    </label>
+                    <select id="financing" name="financing" className={field}>
+                      <option value="">Select one</option>
+                      <option>Cash</option>
+                      <option>Need financing</option>
+                      <option>Undecided</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={label} htmlFor="residency">
+                      Residency interest
+                    </label>
+                    <select id="residency" name="residency" className={field}>
+                      <option value="">Select one</option>
+                      <option>Yes — residency is a goal</option>
+                      <option>No — purchase only</option>
+                      <option>Want to understand the options</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <label className={label} htmlFor="area">
+                    Areas you&rsquo;re considering
+                  </label>
+                  <select id="area" name="area" className={field}>
+                    <option value="">No preference yet</option>
+                    {areas.map((a) => (
+                      <option key={a.slug}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="mt-5">
+                  <label className={label} htmlFor="notes">
+                    Anything else
+                  </label>
+                  <textarea id="notes" name="notes" rows={4} className={field} />
+                </div>
+              </details>
             </fieldset>
 
             <div className="mt-8 flex items-start gap-3">

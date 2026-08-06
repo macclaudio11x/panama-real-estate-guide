@@ -22,7 +22,27 @@ import { supabaseAdmin } from "./supabase";
      project   → project_id   (by slug, resolved below)
    ------------------------------------------------------------------------- */
 
+/* ── Intent ─────────────────────────────────────────────────────────────────
+   What the person actually asked for, which is not the same as how good the
+   lead is. See 0006_lead_intent.sql: a `brief` is a reader who gave an email
+   in exchange for guides and has not asked anyone to call them.
+   ------------------------------------------------------------------------- */
+
+export const LEAD_INTENTS = ["shortlist", "project", "brief"] as const;
+export type LeadIntent = (typeof LEAD_INTENTS)[number];
+
+/** Unknown values fall back to `shortlist` rather than being rejected. The
+ *  field is posted by our own markup, so a value we don't recognise means the
+ *  markup drifted — and treating a real buyer as a cold reader costs more than
+ *  the reverse. */
+function readIntent(value: string | null): LeadIntent {
+  return LEAD_INTENTS.includes(value as LeadIntent)
+    ? (value as LeadIntent)
+    : "shortlist";
+}
+
 export type LeadInput = {
+  intent: LeadIntent;
   full_name: string;
   email: string | null;
   phone: string | null;
@@ -60,6 +80,7 @@ function clean(v: unknown): string | null {
 export function readLeadInput(read: (name: string) => unknown): LeadInput {
   const g = (name: string) => clean(read(name));
   return {
+    intent: readIntent(g("intent")),
     full_name: g("full_name") ?? "",
     email: g("email"),
     phone: g("phone"),
@@ -201,6 +222,7 @@ export async function saveLead(
 ): Promise<SavedLead> {
   const sb = supabaseAdmin();
   const row = {
+    intent: input.intent,
     full_name: input.full_name,
     email: input.email,
     phone: input.phone,
@@ -251,11 +273,18 @@ export async function logIntake(lead: SavedLead, input: LeadInput): Promise<void
     ? `the ${input.project_slug} page`
     : input.page_path ?? "the site";
   const campaign = input.utm_campaign ? ` · campaign ${input.utm_campaign}` : "";
+  /* Spelt out rather than logged as the raw enum: this line is read by whoever
+     picks the lead up, and "asked for guides by email" tells them not to dial
+     in a way that "intent=brief" does not. */
+  const asked =
+    input.intent === "brief"
+      ? "Asked for guides by email — has not requested a call"
+      : "Asked for a broker shortlist";
   await supabaseAdmin()
     .from("lead_events")
     .insert({
       lead_id: lead.id,
       kind: "system",
-      body: `Lead ${lead.reference} submitted from ${where}${campaign}.`,
+      body: `Lead ${lead.reference} submitted from ${where}${campaign}. ${asked}.`,
     });
 }
