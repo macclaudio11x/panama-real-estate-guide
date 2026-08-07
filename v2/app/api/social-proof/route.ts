@@ -76,7 +76,28 @@ export async function GET(req: Request) {
     .from("leads")
     .select("id", { count: "exact", head: true })
     .eq(target.kind === "area" ? "area_id" : "project_id", row.id)
-    .gte("created_at", since);
+    .gte("created_at", since)
+    /* ── The filter that makes this claim true ────────────────────────────
+       Counting every row in `leads` counted the bots. Within a day of this
+       going in, eight of the twelve rows in the table were scripted: a burst
+       of Coinbase phishing that posts a URL as the full name, and a slower
+       run of random-string submissions that trips no spam heuristic at all
+       because it fills the fields in plausibly.
+
+       They post to the project forms, so they arrive carrying `project` and
+       `area` — meaning they land squarely on the pages this line renders on.
+       "5 people have asked us about Boquete" was true of the table and false
+       about the world, which is the same lie as inventing the number, just
+       laundered through a database.
+
+       No heuristic fixes that; the second bot proves it. What does fix it is
+       requiring a person to have looked. A lead only leaves `new` when a
+       human moves it in the CRM, and `lost` is where the spam gets filed, so
+       counting the statuses in between counts leads somebody has confirmed
+       are real. It undercounts, which is the right direction to be wrong in:
+       the worst case is that a true number is too small to print and the
+       fallback shows instead. */
+    .in("status", ["contacted", "qualified", "viewing", "negotiating", "won"]);
 
   /* A failed count falls through to the fallback line. The bar is decoration
      on a page that already works; it must never be the thing that breaks. */
