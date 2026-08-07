@@ -24,9 +24,11 @@ import {
   readLeadInput,
   resolveContext,
   saveLead,
+  spamSignals,
   validateLead,
 } from "@/lib/leads";
 import { notifyLead } from "@/lib/lead-notify";
+import { TURNSTILE_FIELD, verifyTurnstile } from "@/lib/turnstile";
 
 // Leads are written per request and never cached or prerendered.
 export const dynamic = "force-dynamic";
@@ -54,19 +56,52 @@ function backToForm(req: Request, pagePath: string | null, message: string) {
   return `${path ?? "/contact"}?lead_error=${encodeURIComponent(message)}#lead-form`;
 }
 
+/** True when the POST did not come from a page this site served.
+ *
+ *  Compared against the Host header rather than a hardcoded domain or
+ *  `new URL(req.url)`, so it stays correct on deploy previews, on the
+ *  netlify.app hostname, and on localhost without a list to maintain.
+ *
+ *  Absent headers pass. Browsers send Origin on cross-origin form posts, which
+ *  is the case this exists to stop; some privacy tooling strips it on
+ *  same-origin ones, and rejecting those would turn a header quirk into a lost
+ *  buyer. */
+function isCrossOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  const host = req.headers.get("host");
+  if (!origin || !host) return false;
+  try {
+    return new URL(origin).host !== host;
+  } catch {
+    return true;
+  }
+}
+
 export async function POST(req: Request) {
   const contentType = req.headers.get("content-type") ?? "";
   const wantsJson = contentType.includes("application/json");
 
+  if (isCrossOrigin(req)) {
+    return NextResponse.json({ error: "Cross-origin submissions are not accepted." }, { status: 403 });
+  }
+
   let input;
+  let token: string | null = null;
   try {
+    // The getter is kept rather than the container, so the Turnstile token can
+    // be read out of whichever body shape arrived without either dialect being
+    // converted into the other.
+    let read: (name: string) => unknown;
     if (wantsJson) {
       const body = (await req.json()) as Record<string, unknown>;
-      input = readLeadInput((name) => body?.[name]);
+      read = (name) => body?.[name];
     } else {
       const form = await req.formData();
-      input = readLeadInput((name) => form.get(name));
+      read = (name) => form.get(name);
     }
+    input = readLeadInput(read);
+    const raw = read(TURNSTILE_FIELD);
+    token = typeof raw === "string" && raw.trim() !== "" ? raw.trim() : null;
   } catch {
     return NextResponse.json({ error: "Could not read the submission." }, { status: 400 });
   }
@@ -92,6 +127,24 @@ export async function POST(req: Request) {
   const ip = clientIp(req.headers);
   const ipHash = hashIp(ip);
 
+  /* ── Turnstile ───────────────────────────────────────────────────────────
+     Checked after validation so a half-filled form does not burn a token, and
+     before anything touches the database.
+
+     A token that is present and does not verify is rejected outright: that is
+     either a replay, a forgery, or our own secret being wrong, and none of the
+     three should reach the leads table. A token that is absent is a different
+     thing — see TurnstileVerdict — and falls through to the checks below,
+     because these forms are built to submit with JavaScript off and the widget
+     is the one part of them that cannot. */
+  const verdict = await verifyTurnstile(token, ip);
+  if (verdict === "failed") {
+    return fail(
+      "We couldn't verify that submission. Please reload the page and try again.",
+      403,
+    );
+  }
+
   if (await isRateLimited(ipHash)) {
     return fail(
       "We already have a few enquiries from you in the last hour — a broker will be in touch.",
@@ -111,10 +164,17 @@ export async function POST(req: Request) {
     return fail("Something went wrong saving your details. Please try again.", 500);
   }
 
+  /* Saved either way. A lead that looks like spam is still shown to the broker,
+     because a false positive that vanishes silently is worse than a junk row he
+     can delete in one click. What it does not get is the confirmation email —
+     that is the one side effect an abuser can point at a third party, and the
+     one that costs us the sending domain rather than five seconds. */
+  const suspicious = spamSignals(input);
+
   // Committed. Everything past here is best-effort.
   await Promise.allSettled([
-    logIntake(lead, input),
-    notifyLead(lead, input, ip, req.headers.get("user-agent")),
+    logIntake(lead, input, suspicious),
+    notifyLead(lead, input, ip, req.headers.get("user-agent"), suspicious),
   ]);
 
   if (wantsJson) {

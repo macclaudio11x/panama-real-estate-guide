@@ -13,6 +13,7 @@ import {
 import { getProjectEditorial } from "@/lib/editorial";
 import { Button, TitleBadge, SourceNote } from "@/components/ui";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
+import { Turnstile } from "@/components/turnstile";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
 
 /* =============================================================================
@@ -486,6 +487,13 @@ export default async function ProjectPage({
               <LeadAttribution />
               <LeadFormError />
 
+              {/* Honeypot, same convention as the contact form and the in-guide
+                  block. This form was the only one of the three without one. */}
+              <div className="hidden" aria-hidden>
+                <label htmlFor="lead-bot">Leave this empty</label>
+                <input id="lead-bot" name="bot-field" tabIndex={-1} />
+              </div>
+
               <label className="sr-only" htmlFor="lead-name">
                 Name
               </label>
@@ -517,6 +525,9 @@ export default async function ProjectPage({
                 placeholder="Phone or WhatsApp"
                 className="w-full rounded-sm border border-line px-3.5 py-2.5 text-[16px] focus:border-brand outline-none"
               />
+
+              {/* Verified server-side in /api/lead before anything is saved. */}
+              <Turnstile />
 
               <button
                 type="submit"

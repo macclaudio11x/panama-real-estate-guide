@@ -67,32 +67,47 @@ export type LeadInput = {
   honeypot: string | null;
 };
 
-/** Trim, then collapse "" to null — a blank <select> posts an empty string, and
- *  an empty string in a nullable column reads as an answered question. */
-function clean(v: unknown): string | null {
+/** Trim, cap, then collapse "" to null — a blank <select> posts an empty string,
+ *  and an empty string in a nullable column reads as an answered question.
+ *
+ *  The cap is truncation rather than rejection. Nothing on any of these forms
+ *  has an obvious length limit to a person filling it in, so a long answer is
+ *  far more likely to be someone who typed a lot than someone attacking us, and
+ *  turning them away over it would be absurd. What it stops is the unbounded
+ *  case: without a ceiling a single POST can write a megabyte into the CRM, and
+ *  the broker's Telegram alert throws outright past 4096 characters. */
+function clean(v: unknown, max: number): string | null {
   if (typeof v !== "string") return null;
-  const t = v.trim();
+  const t = v.trim().slice(0, max);
   return t === "" ? null : t;
 }
+
+/* One line, one number, one reason. `notes` is the only free-text field on any
+   of the forms, so it is the only one that needs room; everything else is a
+   name, a URL, or a value we put in a <select> ourselves. */
+const SHORT = 200; // names, phone numbers, countries, campaign values
+const EMAIL = 254; // the maximum length of an address, per RFC 5321
+const NOTES = 2000; // roughly 350 words, more than the box invites
+const URLISH = 500; // page_path, referrer — long query strings are real
 
 /** Takes a getter rather than a container, so a FormData and a parsed JSON body
  *  read the same way without either being converted into the other. */
 export function readLeadInput(read: (name: string) => unknown): LeadInput {
-  const g = (name: string) => clean(read(name));
+  const g = (name: string, max = SHORT) => clean(read(name), max);
   return {
     intent: readIntent(g("intent")),
     full_name: g("full_name") ?? "",
-    email: g("email"),
+    email: g("email", EMAIL),
     phone: g("phone"),
     country: g("country"),
     budget_band: g("budget"),
     timeline: g("timeline"),
     financing: g("financing"),
     residency_interest: g("residency"),
-    notes: g("notes"),
+    notes: g("notes", NOTES),
     area_name: g("area"),
     project_slug: g("project"),
-    page_path: g("page_path"),
+    page_path: g("page_path", URLISH),
     utm_source: g("utm_source"),
     utm_medium: g("utm_medium"),
     utm_campaign: g("utm_campaign"),
@@ -101,7 +116,7 @@ export function readLeadInput(read: (name: string) => unknown): LeadInput {
     gclid: g("gclid"),
     fbclid: g("fbclid"),
     fbp: g("fbp"),
-    referrer: g("referrer"),
+    referrer: g("referrer", URLISH),
     honeypot: g("bot-field"),
   };
 }
@@ -121,6 +136,37 @@ export function validateLead(input: LeadInput): string | null {
     return "That email address doesn't look right.";
   }
   return null;
+}
+
+/* ── Spam signals ───────────────────────────────────────────────────────────
+   Turnstile is what actually stops scripted submissions. This is the second
+   look, for the ones that arrive without a token — which is every submission
+   made with JavaScript off, and therefore every submission made by anything
+   that posts to /api/lead directly.
+
+   It does not reject anything. What it does is decide whether we send the
+   confirmation email, because that email is the only thing here an abuser can
+   aim at somebody else: fill the form with a stranger's address and our domain
+   sends them mail we composed. A handful of those is a nuisance; a sustained
+   run of them is how a sending domain gets classed as a spam source.
+
+   Links in free text are the signature to look for. Nobody enquiring about a
+   condo writes a URL into their own name, and a link in the notes of a form
+   that promises a phone call back is doing something other than enquiring.
+   ------------------------------------------------------------------------- */
+
+const LINKY = /(https?:\/\/|www\.|\[url|<a\s|\[\/url\])/i;
+
+/** Returns the reasons this looks like spam, empty when it doesn't. Phrased as
+ *  fragments because they are read in a sentence, in the lead's own timeline. */
+export function spamSignals(input: LeadInput): string[] {
+  const signals: string[] = [];
+  if (LINKY.test(input.full_name)) signals.push("a link in the name field");
+  if (input.notes && LINKY.test(input.notes)) signals.push("a link in the notes");
+  // A name is not a paragraph. This catches the pasted-message-into-every-field
+  // shape without touching anyone with a genuinely long name.
+  if (input.full_name.length > 80) signals.push("an implausibly long name");
+  return signals;
 }
 
 /* ── Reference ──────────────────────────────────────────────────────────────
@@ -268,7 +314,11 @@ export async function saveLead(
 
 /** Opens the activity log for a new lead, so the timeline starts at intake
  *  rather than at whenever a human first touched it. */
-export async function logIntake(lead: SavedLead, input: LeadInput): Promise<void> {
+export async function logIntake(
+  lead: SavedLead,
+  input: LeadInput,
+  suspicious: string[] = [],
+): Promise<void> {
   const where = input.project_slug
     ? `the ${input.project_slug} page`
     : input.page_path ?? "the site";
@@ -279,11 +329,17 @@ export async function logIntake(lead: SavedLead, input: LeadInput): Promise<void
     input.intent === "article"
       ? "Asked for a broker from a guide — no budget or timeline collected"
       : "Asked for a broker shortlist";
+  /* Written into the timeline rather than a column, so the broker sees why the
+     lead looks off in the same place he reads everything else about it — and
+     sees it next to the line saying no confirmation email went out. */
+  const flagged = suspicious.length
+    ? ` Flagged as possible spam (${suspicious.join(", ")}); no confirmation email sent.`
+    : "";
   await supabaseAdmin()
     .from("lead_events")
     .insert({
       lead_id: lead.id,
       kind: "system",
-      body: `Lead ${lead.reference} submitted from ${where}${campaign}. ${asked}.`,
+      body: `Lead ${lead.reference} submitted from ${where}${campaign}. ${asked}.${flagged}`,
     });
 }

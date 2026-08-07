@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { areas } from "@/lib/content";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
+import { Turnstile } from "@/components/turnstile";
 
 export const metadata: Metadata = {
   title: "Get your shortlist",
@@ -241,6 +242,9 @@ export default function ContactPage() {
                 to one licensed broker and no one else.
               </label>
             </div>
+
+            {/* Verified server-side in /api/lead before anything is saved. */}
+            <Turnstile className="mt-5" />
 
             <button
               type="submit"

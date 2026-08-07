@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
+import { Turnstile } from "@/components/turnstile";
 
 /* =============================================================================
    Article lead capture
@@ -201,6 +202,11 @@ export function ArticleCta({
             className={field}
           />
         </div>
+
+        {/* Verified server-side in /api/lead before anything is saved. It draws
+            nothing unless Cloudflare wants an interaction, which is what makes
+            it bearable to render three of these down one guide. */}
+        <Turnstile className="mt-3" />
 
         <button
           type="submit"

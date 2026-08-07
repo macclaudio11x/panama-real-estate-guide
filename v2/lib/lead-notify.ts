@@ -149,7 +149,11 @@ async function sendGa4(input: LeadInput, eventId: string): Promise<void> {
    subscribers-daily function.
    ------------------------------------------------------------------------- */
 
-async function sendTelegramAlert(lead: SavedLead, input: LeadInput): Promise<void> {
+async function sendTelegramAlert(
+  lead: SavedLead,
+  input: LeadInput,
+  suspicious: string[],
+): Promise<void> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chat = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chat) return;
@@ -168,7 +172,15 @@ async function sendTelegramAlert(lead: SavedLead, input: LeadInput): Promise<voi
       : `🏠 New lead: ${input.full_name}\n` +
         `${input.budget_band ?? "budget not given"} · ${input.timeline ?? "timeline not given"}\n\n`;
 
+  /* Leads with the banner, not buries it in a field. Someone reading this on a
+     phone decides whether to call in the first two lines, and "this may be
+     junk" changes that decision. */
+  const warning = suspicious.length
+    ? `⚠️ Possible spam — ${suspicious.join(", ")}. No confirmation email was sent.\n\n`
+    : "";
+
   const text =
+    warning +
     header +
     line("Email", input.email) +
     line("Phone", input.phone) +
@@ -417,12 +429,22 @@ export async function notifyLead(
   input: LeadInput,
   ip: string | null,
   userAgent: string | null,
+  /** Why this submission looked like spam, from spamSignals(). Non-empty
+   *  suppresses the confirmation email and nothing else — see below. */
+  suspicious: string[] = [],
 ): Promise<void> {
   const eventId = randomUUID();
   const channels = ["telegram", "welcome-email", "meta", "ga4"] as const;
+
+  /* Of the four, the confirmation email is the only one that sends anything to
+     an address the submitter chose. The other three go to us, to Meta, and to
+     Google respectively, so a junk lead costs nothing but a glance; a junk
+     email costs a little of the reputation of a domain we need to keep. The
+     broker still gets his Telegram alert, marked, because a lead that is
+     silently dropped is a lead we cannot tell apart from one that never came. */
   const results = await Promise.allSettled([
-    sendTelegramAlert(lead, input),
-    sendClientWelcome(lead, input),
+    sendTelegramAlert(lead, input, suspicious),
+    suspicious.length ? Promise.resolve() : sendClientWelcome(lead, input),
     sendMetaCapi(input, ip, userAgent, eventId),
     sendGa4(input, eventId),
   ]);
