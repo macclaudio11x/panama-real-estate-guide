@@ -5,11 +5,18 @@
    which until now did not exist — every submission 404'd.
 
    It answers in whichever dialect it was asked in. The forms in
-   app/contact/page.tsx and app/projects/[slug]/page.tsx are plain HTML with no
-   JavaScript behind them, so the default path is a form-encoded POST answered
-   with a 303 redirect. A fetch() caller sending JSON gets JSON back. Keeping
-   the no-JS path working is deliberate: it is the one that cannot break in a
-   browser we did not test.
+   app/contact/page.tsx, app/projects/[slug]/page.tsx and components/
+   article-cta.tsx are plain HTML, so the default path is a form-encoded POST
+   answered with a 303 redirect. A fetch() caller sending JSON gets JSON back.
+
+   That native form post is still the submit mechanism, and it is still the one
+   that cannot break in a browser we did not test. What it no longer is, since
+   the Turnstile gate below started rejecting tokenless submissions, is a path
+   that works with JavaScript disabled — the widget needs it, and nothing gets
+   in without a token from the widget. The markup stays plain because a form
+   that posts natively degrades better under a failed hydration or a blocked
+   chunk, which is a far more common failure than JavaScript being switched off
+   on purpose.
 
    Ordering matters here. The row is committed before any notification fires,
    so a Meta outage or a bounced broker email can never cost us the lead.
@@ -131,16 +138,27 @@ export async function POST(req: Request) {
      Checked after validation so a half-filled form does not burn a token, and
      before anything touches the database.
 
-     A token that is present and does not verify is rejected outright: that is
-     either a replay, a forgery, or our own secret being wrong, and none of the
-     three should reach the leads table. A token that is absent is a different
-     thing — see TurnstileVerdict — and falls through to the checks below,
-     because these forms are built to submit with JavaScript off and the widget
-     is the one part of them that cannot. */
+     Both `failed` and `absent` are now turned away. A token that does not
+     verify is a replay, a forgery, or our own secret being wrong. A token that
+     never arrived means the submission did not come from one of our forms in a
+     browser running our JavaScript — which was the documented way in, and the
+     one the bots took: every scripted POST to this endpoint is tokenless by
+     definition. See TurnstileVerdict for what that costs.
+
+     The two are told apart in the copy because the remedies are different. A
+     reload fixes an expired token; nothing about reloading fixes JavaScript
+     being switched off, and a message that implies otherwise sends someone
+     round a loop that cannot terminate. */
   const verdict = await verifyTurnstile(token, ip);
   if (verdict === "failed") {
     return fail(
       "We couldn't verify that submission. Please reload the page and try again.",
+      403,
+    );
+  }
+  if (verdict === "absent") {
+    return fail(
+      "This form uses a bot check that needs JavaScript. Please turn it on and try again.",
       403,
     );
   }

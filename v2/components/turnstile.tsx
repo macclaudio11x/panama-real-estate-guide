@@ -110,13 +110,16 @@ export function Turnstile({ className }: { className?: string }) {
         data-appearance="interaction-only"
         data-size="flexible"
       />
-      {/* The forms submit without JavaScript on purpose, and this is the one
-          part of them that cannot. Someone with it off should know why there is
-          no bot check rather than assume the form is broken. */}
+      {/* Said before the form is filled in, not after it is rejected. The
+          endpoint now turns away submissions with no Turnstile token, so
+          without JavaScript this form cannot be sent at all, and finding that
+          out by typing everything and losing it is the worst version of the
+          news. */}
       <noscript>
         <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
-          This form works without JavaScript. With it on, Cloudflare checks the
-          submission for bots.
+          This form needs JavaScript. It checks submissions for bots through
+          Cloudflare, and that check is the one part of the page that
+          can&rsquo;t run without it.
         </p>
       </noscript>
     </>

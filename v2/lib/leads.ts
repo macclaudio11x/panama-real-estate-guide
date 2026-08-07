@@ -139,10 +139,12 @@ export function validateLead(input: LeadInput): string | null {
 }
 
 /* ── Spam signals ───────────────────────────────────────────────────────────
-   Turnstile is what actually stops scripted submissions. This is the second
-   look, for the ones that arrive without a token — which is every submission
-   made with JavaScript off, and therefore every submission made by anything
-   that posts to /api/lead directly.
+   Turnstile is what stops scripted submissions, and since it started rejecting
+   tokenless posts it stops them before this runs. This is the second look, for
+   whatever arrives holding a token Cloudflare was willing to issue: a real
+   browser driven by a person doing something other than enquiring, or an
+   automation good enough to solve the challenge. Both are rarer than what the
+   gate now turns away, and neither is impossible.
 
    It does not reject anything. What it does is decide whether we send the
    confirmation email, because that email is the only thing here an abuser can

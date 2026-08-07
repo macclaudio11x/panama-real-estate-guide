@@ -11,17 +11,25 @@
 
 const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
-/** The three outcomes the lead route has to tell apart.
+/** The four outcomes the lead route has to tell apart.
  *
- *  `absent` is not a failure. The lead forms are plain HTML that submit without
- *  JavaScript, and the widget is the one part of them that cannot work with
- *  JavaScript off — so a submission with no token is a visitor we have no
- *  verdict on, not a visitor who failed one. Those fall through to the rest of
- *  the checks in lib/leads.ts rather than being turned away.
+ *  `absent` USED TO BE LET THROUGH, on the grounds that the lead forms are
+ *  plain HTML that submit with JavaScript off and the widget is the one part
+ *  of them that cannot. That reasoning was sound and the hole it left was
+ *  immediately load-bearing: anything posting straight to /api/lead sends no
+ *  token either, so the exception written for people without JavaScript was
+ *  used, in practice, only by bots. Eight of the first thirteen rows in the
+ *  table arrived that way, including a run that fills every field plausibly
+ *  and trips no heuristic.
  *
- *  `unconfigured` keeps this branch deployable before TURNSTILE_SECRET exists
- *  in Netlify. It is logged loudly because it is indistinguishable, from the
- *  outside, from having no bot protection at all. */
+ *  So it is now a rejection. The cost is real and worth naming: a visitor with
+ *  JavaScript genuinely disabled can no longer submit these forms at all.
+ *
+ *  `unconfigured` still passes, and deliberately. If TURNSTILE_SECRET goes
+ *  missing, rejecting `absent` would mean rejecting every submission on the
+ *  site — a config slip would silently cost every lead rather than let some
+ *  spam through. It is logged loudly because from the outside it is
+ *  indistinguishable from having no bot protection at all. */
 export type TurnstileVerdict = "ok" | "absent" | "failed" | "unconfigured";
 
 /** Reads the token the widget writes into the form.
