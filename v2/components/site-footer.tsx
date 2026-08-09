@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { categories, areas } from "@/lib/content";
+import { categories } from "@/lib/content";
+import { listAreas } from "@/lib/catalog";
 
 const footerLink =
   "text-footer-text/85 text-[14.5px] no-underline hover:text-white transition-colors";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const areas = await listAreas();
   return (
     <footer className="bg-brand-800 text-footer-text pt-[60px] pb-[30px]">
       <div className="wrap">

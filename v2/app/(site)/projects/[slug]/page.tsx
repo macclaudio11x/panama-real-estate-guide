@@ -2,14 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import {
-  projects,
-  getProject,
-  getArea,
-  usd,
-  m2,
-  statusLabel,
-} from "@/lib/content";
+import { usd, m2, statusLabel } from "@/lib/content";
+import { listProjects, getProject, getArea, getProjectsForArea } from "@/lib/catalog";
 import { getProjectEditorial } from "@/lib/editorial";
 import { Button, TitleBadge, SourceNote } from "@/components/ui";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
@@ -42,8 +36,8 @@ import { mediaUrl, absoluteMedia } from "@/lib/media";
 
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await listProjects()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
@@ -52,9 +46,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProject(slug);
+  const p = await getProject(slug);
   if (!p) return {};
-  const area = getArea(p.areaSlug);
+  const area = await getArea(p.areaSlug);
   const where = area ? `${area.name}, Panama` : "Panama";
 
   // Most project names already carry the area ("Pino Alto Boquete"), so only
@@ -94,13 +88,13 @@ export default async function ProjectPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const p = getProject(slug);
+  const p = await getProject(slug);
   if (!p) notFound();
 
   const editorial = await getProjectEditorial(slug);
-  const area = getArea(p.areaSlug);
-  const siblings = projects
-    .filter((x) => x.areaSlug === p.areaSlug && x.slug !== p.slug)
+  const area = await getArea(p.areaSlug);
+  const siblings = (await getProjectsForArea(p.areaSlug))
+    .filter((x) => x.slug !== p.slug)
     .slice(0, 3);
 
   const prices = p.models

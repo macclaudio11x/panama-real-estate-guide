@@ -1,33 +1,37 @@
-import airtable from "@/data/airtable.json";
-import { normalizeAmenities } from "@/lib/amenities";
-
 /* =============================================================================
    Content model — v2
    =============================================================================
    Two layers, deliberately separate:
 
-   SYNCED    data/airtable.json — projects, photos, prices, unit models. Written
-             by scripts/sync-airtable.mjs. Developer-supplied, never edited here.
-   EDITORIAL the overlays below — title status, positioning, climate, and the
-             guides. Authored by us, never synced, and null until researched.
+   CATALOG   projects, areas, photos, prices, unit models. Now in Supabase and
+             read through lib/catalog.ts. Developer-supplied facts, labelled as
+             such. Until migration 0008 these came from data/airtable.json at
+             build time, which meant publishing a project was a code change.
+   EDITORIAL title status, positioning, climate, and the guides. Authored by us
+             and null until researched. lib/catalog.ts merges the area-level
+             fields; lib/editorial.ts serves the long-form per-slug prose.
 
-   The split is the point. Synced facts come from the developer and are labelled
-   as such; editorial claims carry our name. Merging them would make it
-   impossible to say which is which, and this whole site is a bet on that
-   distinction being visible.
+   The split is the point. Catalog facts come from the developer; editorial
+   claims carry our name. Merging them would make it impossible to say which is
+   which, and this whole site is a bet on that distinction being visible.
+
+   This file is now types, formatters and the two hand-kept lists (categories
+   and authors). It holds no data that changes without a deploy, which is why it
+   can stay synchronous while the catalog cannot.
    ============================================================================= */
 
 export type TitleStatus = "titled" | "rop" | "mixed" | "unknown";
 
-/* ── Editorial overlay ──────────────────────────────────────────────────────
-   Every field here is null until a human researches it. Templates hide null
-   fields rather than showing filler. Cards stay sparse on purpose — a sparse
-   card built from real data beats a full one built from guesses.
+/* ── Area editorial ─────────────────────────────────────────────────────────
+   Every field here is null until a human researches it, and lib/catalog.ts
+   reads them from the areas table. Templates hide null fields rather than
+   showing filler. Cards stay sparse on purpose — a sparse card built from real
+   data beats a full one built from guesses.
 
-   ⚠️ titleStatus is "unknown" for all 15 areas. Whether land in an area is
-   titled or Rights of Possession is the central claim of this site, Airtable
-   has no field for it, and nobody has checked. Do not set these from general
-   knowledge — each one needs a real source. */
+   ⚠️ Whether land in an area is titled or Rights of Possession is the central
+   claim of this site. Do not set titleStatus from general knowledge: the
+   database enforces a check constraint requiring a source URL, a date and a
+   named verifier before it will accept anything other than 'unknown'. */
 type AreaEditorial = {
   titleStatus: TitleStatus;
   titleNote: string | null;
@@ -37,35 +41,7 @@ type AreaEditorial = {
   verifiedOn: string | null;
 };
 
-const BLANK: AreaEditorial = {
-  titleStatus: "unknown",
-  titleNote: null,
-  positioning: null,
-  elevationM: null,
-  climate: null,
-  verifiedOn: null,
-};
-
-const AREA_EDITORIAL: Record<string, AreaEditorial> = {
-  "costa-del-este": { ...BLANK },
-  "santa-maria": { ...BLANK },
-  boquete: { ...BLANK },
-  marbella: { ...BLANK },
-  amador: { ...BLANK },
-  "playa-venao": { ...BLANK },
-  "punta-pacifica": { ...BLANK },
-  sora: { ...BLANK },
-  bijao: { ...BLANK },
-  "playa-bonita": { ...BLANK },
-  buenaventura: { ...BLANK },
-  obarrio: { ...BLANK },
-  "playa-caracol": { ...BLANK },
-  "rio-hato": { ...BLANK },
-  portobelo: { ...BLANK },
-  "bocas-del-toro": { ...BLANK },
-};
-
-/* ── Synced shapes ──────────────────────────────────────────────────────────*/
+/* ── Catalog shapes ─────────────────────────────────────────────────────────*/
 
 export type UnitModel = {
   name: string | null;
@@ -107,52 +83,13 @@ export type Area = AreaEditorial & {
   photo: string | null;
 };
 
-/* ── Merge ──────────────────────────────────────────────────────────────────*/
+/* The catalog itself now lives in lib/catalog.ts: listProjects, listAllProjects,
+   getProject, getProjectsForArea, listAreas and getArea, all async because they
+   read Supabase. Import them from there.
 
-/* Only what a visitor may see. `published` mirrors "Publicado en Web", and the
-   Supabase RLS policy is `using (published)` — so reading everything here would
-   show 18 projects publicly that vanish the moment the data source changes.
-   The flag is the editorial control; the code just honours it. */
-const clean = (p: Project): Project => ({
-  ...p,
-  // Amenities arrive as raw Spanish developer copy and the sync overwrites any
-  // fix made in the JSON, so the cleanup has to happen here. See lib/amenities.
-  amenities: normalizeAmenities(p.amenities),
-});
-
-export const projects = (airtable.projects as Project[])
-  .filter((p) => p.published)
-  .map(clean);
-
-/** Every project including unpublished. For internal tooling only — never
- *  render these. */
-export const allProjects = (airtable.projects as Project[]).map(clean);
-
-export const areas: Area[] = airtable.areas.map((a) => {
-  const inArea = projects.filter((p) => p.areaSlug === a.slug);
-
-  // Derived from published inventory, not from the sync's totals. Quoting a
-  // price from a project a visitor cannot open is worse than quoting none.
-  const froms = inArea
-    .map((p) => p.priceFromUsd)
-    .filter((n): n is number => typeof n === "number");
-  const tops = inArea
-    .map((p) => p.priceToUsd ?? p.priceFromUsd)
-    .filter((n): n is number => typeof n === "number");
-
-  return {
-    ...(AREA_EDITORIAL[a.slug] ?? BLANK),
-    slug: a.slug,
-    name: a.name,
-    region: a.region,
-    projectCount: inArea.length,
-    priceFromUsd: froms.length ? Math.min(...froms) : null,
-    priceToUsd: tops.length ? Math.max(...tops) : null,
-    // Borrow the first project photo as the area's cover until we have
-    // dedicated area photography.
-    photo: inArea.find((p) => p.photos.length)?.photos[0]?.src ?? null,
-  };
-});
+   `published` is the editorial control and listings must honour it — the
+   Supabase RLS policy is `using (published)`, and listProjects filters on the
+   same flag so an unpublished project cannot reach a page by another route. */
 
 /* ── Editorial: people, categories, guides ──────────────────────────────────*/
 
@@ -248,13 +185,9 @@ export const authors: Author[] = [
 
 /* ── Lookups ────────────────────────────────────────────────────────────────*/
 
-export const getArea = (slug: string) => areas.find((a) => a.slug === slug);
-
-export const getProjectsForArea = (slug: string) =>
-  projects.filter((p) => p.areaSlug === slug);
-
-export const getProject = (slug: string) =>
-  projects.find((p) => p.slug === slug);
+/* getArea, getProject and getProjectsForArea moved to lib/catalog.ts when the
+   catalog moved to Supabase. Authors stay here because they are a hand-kept
+   list, not CMS content. */
 
 export const getAuthor = (slug: string) => authors.find((a) => a.slug === slug);
 

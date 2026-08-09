@@ -55,6 +55,26 @@ const FAQ = {
   properties: { q: { type: "string" }, a: { type: "string" } },
 };
 
+const PHOTO = {
+  type: "object",
+  required: ["src"],
+  properties: {
+    src: { type: "string", description: "Media-base-relative path, e.g. /projects/<slug>/01.webp. upload_media returns one." },
+    alt: { type: "string", description: "Describe the view or the room. Null is allowed but worse." },
+  },
+};
+
+const UNIT_MODEL = {
+  type: "object",
+  properties: {
+    name: { type: "string", description: "The developer's model name, e.g. 'Torre A — 2 rec'." },
+    beds: { type: "integer" },
+    baths: { type: "number", description: "Halves are allowed: 2.5." },
+    size_m2: { type: "number" },
+    price_from_usd: { type: "integer" },
+  },
+};
+
 const ARTICLE_FIELDS = {
   title: { type: "string", description: "H1, and the search-result title unless `seo_title` overrides it. Keep at or under 60 characters, keyword first." },
   dek: { type: "string", description: "Standfirst and listing-card copy, and the meta description unless `meta_description` overrides it. Keep it 140–160 characters and able to stand alone." },
@@ -178,14 +198,34 @@ const TOOLS = [
     inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } },
   },
   {
+    name: "create_area",
+    description:
+      "Create a new area. Slug must be lowercase-hyphenated with no spaces or accents, or the route 404s silently. The area is live within ~60 seconds; no deploy.",
+    inputSchema: {
+      type: "object",
+      required: ["slug", "name", "region"],
+      properties: {
+        slug: { type: "string", description: "Lowercase, hyphenated, no accents. Becomes /areas/<slug>." },
+        name: { type: "string" },
+        region: { type: "string", description: "e.g. 'Panama City', 'Pacific Coast', 'Chiriquí Highlands'." },
+        positioning: { type: "string", description: "One sentence on who ends up here and why." },
+        blurb: { type: "string" },
+      },
+    },
+  },
+  {
     name: "update_area",
     description:
-      "Patch an area page's editorial fields. `suits` and `drawbacks` must be grounded in this area's own sources — they were fabricated once and had to be stripped.",
+      "Patch an area's fields, editorial or core. `suits` and `drawbacks` must be grounded in this area's own sources — they were fabricated once and had to be stripped.",
     inputSchema: {
       type: "object",
       required: ["slug"],
       properties: {
         slug: { type: "string" },
+        name: { type: "string" },
+        region: { type: "string" },
+        elevation_m: { type: "integer" },
+        climate: { type: "string" },
         positioning: { type: "string" },
         blurb: { type: "string" },
         cost_of_living_note: { type: "string" },
@@ -219,15 +259,57 @@ const TOOLS = [
     inputSchema: { type: "object", required: ["slug"], properties: { slug: { type: "string" } } },
   },
   {
+    name: "create_project",
+    description:
+      "Create a new development. Slug must be lowercase-hyphenated with no spaces or accents, or the route 404s silently. Created unpublished: the database rejects publishing without a hook, a drawback and 3+ FAQs, so write those with update_project, then set published. Live within ~60 seconds; no deploy.",
+    inputSchema: {
+      type: "object",
+      required: ["slug", "name", "area"],
+      properties: {
+        slug: { type: "string", description: "Lowercase, hyphenated, no accents. Becomes /projects/<slug>." },
+        name: { type: "string" },
+        area: { type: "string", description: "Area slug it belongs to. Must already exist; create_area first if not." },
+        status: { type: "string", enum: ["preselling", "under_construction", "delivered"] },
+        price_from_usd: { type: "integer" },
+        price_to_usd: { type: "integer" },
+        website_url: { type: "string" },
+        amenities: { type: "array", items: { type: "string" }, description: "Developer's list. Spanish is fine; the site normalises it." },
+        photos: { type: "array", items: PHOTO, description: "Ordered. First is the hero and the og:image. Upload with upload_media first." },
+        models: { type: "array", items: UNIT_MODEL, description: "The per-unit table. No competitor publishes one, so it is the strongest asset on the page." },
+      },
+    },
+  },
+  {
+    name: "set_project_models",
+    description:
+      "Replace a project's unit-model table wholesale. Pass the full list in display order; anything omitted is deleted.",
+    inputSchema: {
+      type: "object",
+      required: ["slug", "models"],
+      properties: {
+        slug: { type: "string" },
+        models: { type: "array", items: UNIT_MODEL },
+      },
+    },
+  },
+  {
     name: "update_project",
     description:
-      "Patch a project's editorial fields. Publishing enforces the database's own constraint: a hook, a drawback, and 3+ FAQs.",
+      "Patch a project's fields, editorial or core. Publishing enforces the database's own constraint: a hook, a drawback, and 3+ FAQs.",
     inputSchema: {
       type: "object",
       required: ["slug"],
       properties: {
         slug: { type: "string" },
         published: { type: "boolean" },
+        name: { type: "string" },
+        area: { type: "string", description: "Move it to a different area, by slug." },
+        status: { type: "string", enum: ["preselling", "under_construction", "delivered"] },
+        price_from_usd: { type: "integer" },
+        price_to_usd: { type: "integer" },
+        website_url: { type: "string" },
+        amenities: { type: "array", items: { type: "string" } },
+        photos: { type: "array", items: PHOTO, description: "Ordered. Replaces the existing list." },
         hook: { type: "string" },
         location_note: { type: "string" },
         suits: { type: "string" },
@@ -340,6 +422,28 @@ function reviewWrite(merged, willPublish, force) {
   const { errors, warnings } = lintArticle(merged);
   const blockers = willPublish ? publishGate(merged, force) : [];
   return { errors, warnings, blockers };
+}
+
+/* Unit models live in their own table, so both create_project and
+   set_project_models funnel through here. Replace-wholesale rather than
+   patch-by-id: the table is a display list, and reconciling ids for a five-row
+   table costs more than rewriting it. Deliberately not a handler — the
+   dispatcher resolves tool names against `handlers`, so anything living in
+   there is reachable as a tool whether or not it is declared in TOOLS. */
+async function writeModels(projectId, models) {
+  await db().from("unit_models").delete().eq("project_id", projectId);
+  if (!models?.length) return null;
+  const rows = models.map((m, i) => ({
+    project_id: projectId,
+    name: m.name ?? null,
+    beds: m.beds ?? null,
+    baths: m.baths ?? null,
+    size_m2: m.size_m2 ?? null,
+    price_from_usd: m.price_from_usd ?? null,
+    position: i,
+  }));
+  const { error } = await db().from("unit_models").insert(rows);
+  return error?.message ?? null;
 }
 
 const handlers = {
@@ -542,6 +646,20 @@ const handlers = {
     return json(data);
   },
 
+  async create_area(a) {
+    const slug = slugify(a.slug);
+    if (slug !== a.slug) return fail(`Slug "${a.slug}" is not URL-safe. Use "${slug}".`);
+    const { data: existing } = await db().from("areas").select("slug").eq("slug", slug).maybeSingle();
+    if (existing) return fail(`Area "${slug}" already exists. Use update_area.`);
+    const { error } = await db().from("areas").insert({
+      slug, name: a.name, region: a.region,
+      ...(a.positioning !== undefined && { positioning: a.positioning }),
+      ...(a.blurb !== undefined && { blurb: a.blurb }),
+    });
+    if (error) return fail(error.message);
+    return text(`Created area "${slug}" at /areas/${slug}. Live within ~60 seconds. It shows no price or project count until a published project sits in it.`);
+  },
+
   async update_area(a) {
     const { slug, ...patch } = a;
     if (Object.keys(patch).length === 0) return fail("Nothing to update.");
@@ -576,8 +694,55 @@ const handlers = {
     return json(data);
   },
 
+  async create_project(a) {
+    const slug = slugify(a.slug);
+    if (slug !== a.slug) return fail(`Slug "${a.slug}" is not URL-safe. Use "${slug}".`);
+    const { data: existing } = await db().from("projects").select("slug").eq("slug", slug).maybeSingle();
+    if (existing) return fail(`Project "${slug}" already exists. Use update_project.`);
+
+    const { data: area } = await db().from("areas").select("id").eq("slug", a.area).maybeSingle();
+    if (!area) return fail(`No area "${a.area}". Run list_areas, or create_area first.`);
+
+    const { data: created, error } = await db().from("projects").insert({
+      slug, name: a.name, area_id: area.id,
+      // Always unpublished. The CHECK constraint would reject a publish
+      // without a hook, a drawback and 3+ FAQs, and none exist yet.
+      published: false,
+      ...(a.status !== undefined && { status: a.status }),
+      ...(a.price_from_usd !== undefined && { price_from_usd: a.price_from_usd }),
+      ...(a.price_to_usd !== undefined && { price_to_usd: a.price_to_usd }),
+      ...(a.website_url !== undefined && { website_url: a.website_url }),
+      ...(a.amenities !== undefined && { amenities: a.amenities }),
+      ...(a.photos !== undefined && { photos: a.photos }),
+    }).select("id").single();
+    if (error) return fail(error.message);
+
+    const modelErr = await writeModels(created.id, a.models);
+    if (modelErr) return fail(`Project created but unit models failed: ${modelErr}`);
+
+    return text(
+      `Created "${slug}" in ${a.area} at /projects/${slug}, unpublished, ` +
+      `${n(a.models)} unit model${n(a.models) === 1 ? "" : "s"}. ` +
+      `Write a hook, a drawback and 3+ FAQs with update_project, then set published: true.`,
+    );
+  },
+
+  async set_project_models(a) {
+    const { data: p } = await db().from("projects").select("id").eq("slug", a.slug).maybeSingle();
+    if (!p) return fail(`No project with slug "${a.slug}".`);
+    const err = await writeModels(p.id, a.models);
+    if (err) return fail(err);
+    return text(`Replaced the unit table for "${a.slug}" with ${n(a.models)} model${n(a.models) === 1 ? "" : "s"}. Live within ~60 seconds.`);
+  },
+
   async update_project(a) {
-    const { slug, ...patch } = a;
+    const { slug, area, ...rest } = a;
+    const patch = { ...rest };
+    if (area !== undefined) {
+      const { data: found } = await db().from("areas").select("id").eq("slug", area).maybeSingle();
+      if (!found) return fail(`No area "${area}". Run list_areas, or create_area first.`);
+      patch.area_id = found.id;
+    }
     if (Object.keys(patch).length === 0) return fail("Nothing to update.");
     const { data: current } = await db().from("projects").select("*").eq("slug", slug).maybeSingle();
     if (!current) return fail(`No project with slug "${slug}".`);

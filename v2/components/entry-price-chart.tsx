@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { areas, usd } from "@/lib/content";
+import { usd } from "@/lib/content";
+import { listAreas } from "@/lib/catalog";
 
 /* =============================================================================
    Entry price by area
@@ -21,8 +22,8 @@ import { areas, usd } from "@/lib/content";
    full range lives on /areas, where a table can carry it properly.
    ============================================================================= */
 
-export function EntryPriceChart() {
-  const rows = [...areas]
+export async function EntryPriceChart() {
+  const rows = [...(await listAreas())]
     .filter((a) => a.priceFromUsd != null)
     .sort((a, b) => (a.priceFromUsd ?? 0) - (b.priceFromUsd ?? 0));
 

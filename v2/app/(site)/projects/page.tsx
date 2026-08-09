@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { projects, areas, usd } from "@/lib/content";
+import { usd } from "@/lib/content";
+import { listAreas, listProjects } from "@/lib/catalog";
 import { ProjectSearch } from "@/components/project-search";
 
-// Areas that actually hold published inventory — three of the fifteen we
-// track have none, and counting those would overstate the catalogue.
-const stocked = areas.filter((a) => a.projectCount > 0).length;
+export const revalidate = 60;
 
-const entry = Math.min(
-  ...projects.map((p) => p.priceFromUsd ?? Infinity).filter(Number.isFinite),
-);
+// The counts come from the catalogue, so the metadata has to be generated
+// rather than declared. Areas that actually hold published inventory: three of
+// the eighteen we track have none, and counting those would overstate it.
+export async function generateMetadata(): Promise<Metadata> {
+  const [projects, areas] = await Promise.all([listProjects(), listAreas()]);
+  const stocked = areas.filter((a) => a.projectCount > 0).length;
+  const entry = Math.min(
+    ...projects.map((p) => p.priceFromUsd ?? Infinity).filter(Number.isFinite),
+  );
+  return {
+    title: { absolute: `${projects.length} New Developments for Sale in Panama` },
+    description: `Browse ${projects.length} residential developments across ${stocked} areas of Panama, from ${usd(entry)}. Filter by area, price and build status.`,
+    alternates: { canonical: "/projects" },
+  };
+}
 
-export const metadata: Metadata = {
-  title: `New developments for sale in Panama — ${projects.length} projects`,
-  description: `Browse ${projects.length} residential developments across ${stocked} areas of Panama, from ${usd(entry)}. Filter by area, price, and build status. Prices as listed by developers.`,
-  alternates: { canonical: "/projects" },
-};
-
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const [projects, areas] = await Promise.all([listProjects(), listAreas()]);
+  const stocked = areas.filter((a) => a.projectCount > 0).length;
+  const entry = Math.min(
+    ...projects.map((p) => p.priceFromUsd ?? Infinity).filter(Number.isFinite),
+  );
   return (
     <>
       <section className="hero-band">

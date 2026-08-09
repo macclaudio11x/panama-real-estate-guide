@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { areas, projects, categories } from "@/lib/content";
+import { categories } from "@/lib/content";
+import { listAreas, listProjects } from "@/lib/catalog";
 import { listArticles } from "@/lib/articles";
 
 const SITE_BASE = "https://panamarealestateguide.com";
@@ -24,13 +25,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const areaRoutes: MetadataRoute.Sitemap = areas.map((a) => ({
+  const areaRoutes: MetadataRoute.Sitemap = (await listAreas()).map((a) => ({
     url: `${SITE_BASE}/areas/${a.slug}`,
     changeFrequency: "monthly",
     priority: 0.75,
   }));
 
-  const projectRoutes: MetadataRoute.Sitemap = projects.map((p) => ({
+  const projectRoutes: MetadataRoute.Sitemap = (await listProjects()).map((p) => ({
     url: `${SITE_BASE}/projects/${p.slug}`,
     changeFrequency: "monthly",
     priority: 0.9,

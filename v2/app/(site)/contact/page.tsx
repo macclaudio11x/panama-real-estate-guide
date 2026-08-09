@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { areas } from "@/lib/content";
+import { listAreas } from "@/lib/catalog";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { Turnstile } from "@/components/turnstile";
 
@@ -14,7 +14,7 @@ const field =
 const label =
   "block font-display text-[13px] font-bold uppercase tracking-[0.077em] text-ink mb-2";
 
-export default function ContactPage() {
+export default async function ContactPage() {
   return (
     <>
       <section className="hero-band">
@@ -214,7 +214,7 @@ export default function ContactPage() {
                   </label>
                   <select id="area" name="area" className={field}>
                     <option value="">No preference yet</option>
-                    {areas.map((a) => (
+                    {(await listAreas()).map((a) => (
                       <option key={a.slug}>{a.name}</option>
                     ))}
                   </select>

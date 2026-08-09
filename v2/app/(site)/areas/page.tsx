@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { areas, projects, usd, titleLabel } from "@/lib/content";
+import { usd, titleLabel } from "@/lib/content";
+import { listAreas, listProjects } from "@/lib/catalog";
 import { AreaCard } from "@/components/area-card";
 import { SourceNote } from "@/components/ui";
 
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
     "Entry price, inventory, and title status for every Panama area we track, from Costa del Este and Santa María to Boquete, Playa Venao, and Portobelo.",
 };
 
-export default function AreasPage() {
+export default async function AreasPage() {
+  const [areas, projects] = await Promise.all([listAreas(), listProjects()]);
   return (
     <>
       {/* ── Hero band ────────────────────────────────────────────────────── */}

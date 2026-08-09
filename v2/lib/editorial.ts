@@ -4,13 +4,13 @@ import type { TitleStatus } from "@/lib/content";
 /* =============================================================================
    Editorial content — read from Supabase
    =============================================================================
-   The synced facts (price, units, photos) still come from data/airtable.json
-   via lib/content.ts — see the comment there. This file is the other half:
-   the prose a human wrote, which lives only in Supabase and only appears here.
+   The catalog facts (price, units, photos) come from lib/catalog.ts. This file
+   is the other half: the long-form prose a human wrote.
 
-   Fetched per-slug in the three detail pages, not merged into the top-level
-   `projects`/`areas`/`articles` arrays — those stay synchronous because
-   listings, cards, and generateStaticParams only ever need the synced facts.
+   Both now read Supabase, but they stay separate because they are fetched
+   differently. The catalog is listed in bulk for cards, listings and
+   generateStaticParams; this is fetched per-slug in the detail pages only,
+   since no listing needs a project's buying_note or an area's FAQ block.
    ============================================================================= */
 
 export type Faq = { q: string; a: string };

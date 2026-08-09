@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { areas, categories, projects } from "@/lib/content";
+import { categories, type Project } from "@/lib/content";
+import { listAreas, listProjects } from "@/lib/catalog";
 import { listArticles } from "@/lib/articles";
 import { Button, SectionHead } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
@@ -8,17 +9,19 @@ import { HeroPriceCollage } from "@/components/hero-price-collage";
 
 // Cheapest first, and one per area so the grid shows the spread of the
 // catalogue rather than six towers from whichever area has the most.
-const featured = (() => {
+function pickFeatured(projects: Project[]) {
   const seen = new Set<string>();
   return [...projects]
     .sort((a, b) => (a.priceFromUsd ?? 0) - (b.priceFromUsd ?? 0))
     .filter((p) => !seen.has(p.areaSlug) && seen.add(p.areaSlug))
     .slice(0, 6);
-})();
+}
 
 export const revalidate = 60;
 
 export default async function HomePage() {
+  const [areas, projects] = await Promise.all([listAreas(), listProjects()]);
+  const featured = pickFeatured(projects);
   const articles = await listArticles();
 
   return (

@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { areas, getArea, getProjectsForArea, usd } from "@/lib/content";
+import { usd } from "@/lib/content";
+import { listAreas, getArea, getProjectsForArea } from "@/lib/catalog";
 import { getAreaEditorialFull } from "@/lib/editorial";
 import { Button, TitleBadge, SourceNote } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
 
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return areas.map((a) => ({ slug: a.slug }));
+export async function generateStaticParams() {
+  return (await listAreas()).map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({
@@ -18,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const area = getArea(slug);
+  const area = await getArea(slug);
   if (!area) return {};
   // Absolute and inside ~60 characters including the longest area name, so the
   // layout's site-name suffix does not push the keyword out of the search
@@ -53,11 +54,12 @@ export default async function AreaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const area = getArea(slug);
+  const area = await getArea(slug);
   if (!area) notFound();
 
   const editorial = await getAreaEditorialFull(slug);
-  const areaProjects = getProjectsForArea(slug);
+  const areaProjects = await getProjectsForArea(slug);
+  const areas = await listAreas();
   const positioning = editorial?.positioning ?? area.positioning;
   const titleStatus = editorial?.titleStatus ?? area.titleStatus;
   const titleNote = editorial?.titleNote ?? area.titleNote;
