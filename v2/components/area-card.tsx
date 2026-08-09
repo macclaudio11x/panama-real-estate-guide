@@ -19,7 +19,7 @@ export function AreaCard({ area }: { area: Area }) {
     >
       <MediaSlot
         src={area.photo}
-        alt={`${area.name}, ${area.region}`}
+        alt={area.photoAlt ?? `${area.name}, ${area.region}`}
         eyebrow={area.region}
         title={area.name}
         detail={detail || undefined}

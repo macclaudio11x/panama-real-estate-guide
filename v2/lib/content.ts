@@ -81,6 +81,9 @@ export type Area = AreaEditorial & {
   priceFromUsd: number | null;
   priceToUsd: number | null;
   photo: string | null;
+  /* The borrowed cover's own alt text, so an area card describes the
+     photograph rather than repeating the area name. */
+  photoAlt: string | null;
 };
 
 /* The catalog itself now lives in lib/catalog.ts: listProjects, listAllProjects,

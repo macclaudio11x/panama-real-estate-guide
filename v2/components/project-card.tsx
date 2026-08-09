@@ -56,7 +56,7 @@ export function ProjectCard({
         {photos[i] && (
           <Image
             src={mediaUrl(photos[i].src)!}
-            alt={`${p.name}${area ? `, ${area.name}` : ""} — photo ${i + 1} of ${photos.length}`}
+            alt={photos[i].alt ?? `${p.name}${area ? `, ${area.name}` : ""} — photo ${i + 1} of ${photos.length}`}
             fill
             sizes="(max-width: 680px) 100vw, (max-width: 1080px) 50vw, 33vw"
             className="object-cover"

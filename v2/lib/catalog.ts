@@ -158,6 +158,8 @@ export const listAreas = cache(async (): Promise<Area[]> => {
   return (data as AreaRow[]).map((a) => {
     const inArea = published.filter((p) => p.areaSlug === a.slug);
 
+    const cover = inArea.find((p) => p.photos.length)?.photos[0] ?? null;
+
     /* Derived from published inventory, not from a stored total. Quoting a
        price from a project a visitor cannot open is worse than quoting none. */
     const froms = inArea.map((p) => p.priceFromUsd);
@@ -176,8 +178,10 @@ export const listAreas = cache(async (): Promise<Area[]> => {
       projectCount: inArea.length,
       priceFromUsd: min(froms),
       priceToUsd: max(tops),
-      // Borrow the first project photo until we have area photography.
-      photo: inArea.find((p) => p.photos.length)?.photos[0]?.src ?? null,
+      // Borrow the first project photo until we have area photography, and
+      // carry its alt across with it.
+      photo: cover?.src ?? null,
+      photoAlt: cover?.alt ?? null,
     };
   });
 });

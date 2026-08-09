@@ -211,7 +211,7 @@ export default async function ProjectPage({
             <div className="relative aspect-[4/3] min-[760px]:aspect-[3/2] rounded-md overflow-hidden bg-brand-900">
               <Image
                 src={mediaUrl(p.photos[0].src)!}
-                alt={`${p.name}, ${area?.name ?? "Panama"}`}
+                alt={p.photos[0].alt ?? `${p.name}, ${area?.name ?? "Panama"}`}
                 fill
                 priority
                 sizes="(max-width: 760px) 100vw, 66vw"
@@ -227,7 +227,7 @@ export default async function ProjectPage({
                   >
                     <Image
                       src={mediaUrl(ph.src)!}
-                      alt={`${p.name} — view ${i + 2}`}
+                      alt={ph.alt ?? `${p.name} — view ${i + 2}`}
                       fill
                       sizes="(max-width: 760px) 50vw, 33vw"
                       className="object-cover"
