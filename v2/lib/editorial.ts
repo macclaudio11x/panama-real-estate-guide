@@ -140,6 +140,10 @@ export type ArticleAuthor = {
 export type ArticleFull = {
   title: string;
   dek: string | null;
+  /* Search metadata. Null means "use title/dek" — see migration 0007. Only set
+     when a page wants its search result to differ from its headline. */
+  seoTitle: string | null;
+  metaDescription: string | null;
   body: string | null;
   faqs: Faq[];
   sources: SourceRef[];
@@ -164,7 +168,7 @@ export async function getArticleFull(
   const { data, error } = await supabase
     .from("articles")
     .select(
-      `title, dek, body, faqs, sources, read_minutes, reviewed_on, og_image_path,
+      `title, dek, seo_title, meta_description, body, faqs, sources, read_minutes, reviewed_on, og_image_path,
        author:authors!articles_author_id_fkey ( name, title, bio, credential, avatar_url ),
        reviewer:authors!articles_reviewer_id_fkey ( name, title, bio, credential, avatar_url )`,
     )
@@ -192,6 +196,8 @@ export async function getArticleFull(
   return {
     title: data.title,
     dek: data.dek,
+    seoTitle: data.seo_title,
+    metaDescription: data.meta_description,
     body: data.body,
     faqs: (data.faqs as Faq[]) ?? [],
     sources: (data.sources as SourceRef[]) ?? [],

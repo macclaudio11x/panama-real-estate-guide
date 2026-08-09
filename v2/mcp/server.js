@@ -56,8 +56,10 @@ const FAQ = {
 };
 
 const ARTICLE_FIELDS = {
-  title: { type: "string", description: "H1 and search-result title, emitted with no site-name suffix. Keep at or under 60 characters, keyword first." },
-  dek: { type: "string", description: "Standfirst. Also the meta description and the listing card copy, so keep it 140–160 characters and able to stand alone." },
+  title: { type: "string", description: "H1, and the search-result title unless `seo_title` overrides it. Keep at or under 60 characters, keyword first." },
+  dek: { type: "string", description: "Standfirst and listing-card copy, and the meta description unless `meta_description` overrides it. Keep it 140–160 characters and able to stand alone." },
+  seo_title: { type: "string", description: "Search-result title ONLY, when it should differ from the H1. Leave unset on most articles so the two stay in sync. At or under 60 characters; no site-name suffix is appended. Empty string clears it." },
+  meta_description: { type: "string", description: "Meta description ONLY, when it should differ from the dek. Leave unset on most articles. 140–160 characters. Empty string clears it." },
   body: { type: "string", description: "Markdown. Do NOT include an FAQ heading — the template appends one from `faqs`. Charts go in a ```chart fenced JSON block." },
   faqs: { type: "array", items: FAQ },
   sources: { type: "array", items: SOURCE },
@@ -320,6 +322,11 @@ async function toRow(a) {
     "read_minutes", "updated_on", "og_image_path", "reviewed_on", "status",
   ]) {
     if (a[k] !== undefined) row[k] = a[k];
+  }
+  // Null, not "", is what the routes read as "fall back to title/dek", so an
+  // empty string has to clear the override rather than blank the search result.
+  for (const k of ["seo_title", "meta_description"]) {
+    if (a[k] !== undefined) row[k] = a[k] === "" ? null : a[k];
   }
   if (a.category !== undefined) row.category_id = await categoryId(a.category);
   if (a.author !== undefined) row.author_id = await authorId(a.author);

@@ -36,16 +36,25 @@ export async function generateMetadata({
   // that was not even in the repo. An article without its own image gets none,
   // which at least lets the crawler fall back to the site default.
   const og = article.ogImagePath ? absoluteMedia(article.ogImagePath) : null;
+  // `seo_title`/`meta_description` override the headline and standfirst in
+  // search results only, and are null on most articles. See migration 0007.
+  const searchTitle = article.seoTitle ?? article.title;
+  const searchDescription = article.metaDescription ?? article.dek ?? undefined;
+
   return {
     // Absolute, matching the project route. The layout template appends
     // "| Panama Real Estate Guide", which is 27 of the ~60 characters Google
     // shows before it truncates. On an article whose title is already carrying
     // the keyword, that is a quarter of the budget spent on branding the
     // domain name already communicates.
-    title: { absolute: article.title },
-    description: article.dek ?? undefined,
+    title: { absolute: searchTitle },
+    description: searchDescription,
     alternates: { canonical: `/${category}/${slug}` },
     openGraph: {
+      // Deliberately the headline, not the search override. A share card sits
+      // next to a link someone is about to open, so it should say what the page
+      // says. The SEO fields exist to win a click in a ranked list, which is a
+      // different job.
       title: article.title,
       description: article.dek ?? undefined,
       url: `/${category}/${slug}`,

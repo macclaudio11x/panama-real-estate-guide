@@ -5,18 +5,28 @@
 The routes emit the title **absolutely**, with no "| Panama Real Estate Guide"
 suffix appended, so the whole budget belongs to the page.
 
-- **`title`** — 60 characters maximum. It is the H1 and the search-result title
-  at once. Primary keyword first, before the colon. "Boquete Real Estate:
-  Prices, Title and Who It Suits" works. A title that opens with a subordinate
-  clause and reaches the keyword in the ninth word does not.
+- **`title`** — 60 characters maximum. It is the H1, and the search-result title
+  unless overridden. Primary keyword first, before the colon. "Boquete Real
+  Estate: Prices, Title and Who It Suits" works. A title that opens with a
+  subordinate clause and reaches the keyword in the ninth word does not.
 - **`dek`** — 140 to 160 characters, and it must read as a complete thought on
-  its own. It is doing three jobs: the standfirst under the headline, the copy
-  on the listing card, and the meta description in search results. Under 140
-  wastes the snippet; over 160 gets cut mid-sentence.
+  its own. It is the standfirst under the headline, the copy on the listing
+  card, and the meta description unless overridden. Under 140 wastes the
+  snippet; over 160 gets cut mid-sentence.
 
-The linter warns on both, so check `lint_article` before you call the page done.
-Neither is a gotcha or a debunk: the title and dek are the only part of the page
-most people ever see, so they carry the same warmth as the body.
+**`seo_title` and `meta_description` override the two above in search results
+only.** Leave them unset on almost every article. They exist for the case where
+the snippet genuinely wants different copy from the page: a headline that reads
+well above the article but buries the keyword, or a standfirst that flows into
+the first paragraph where the snippet needs to stand alone and earn a click.
+Setting them on a page that does not need them creates a second copy to keep in
+sync, and the next headline edit silently stops matching the search result. Set
+them to an empty string to clear an override.
+
+The linter warns on whichever field actually reaches the snippet, so run
+`lint_article` before you call the page done. None of these is a gotcha or a
+debunk: the title and the description are the only part of the page most people
+ever see, so they carry the same warmth as the body.
 
 Three shapes. Each maps to a different search intent, so each has a different
 skeleton. Read the one you are writing.

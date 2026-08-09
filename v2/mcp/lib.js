@@ -326,20 +326,27 @@ export function lintArticle(row) {
     warnings.push("A paragraph ends on a trailing-dash punchline. Rewrite it.");
   }
 
-  // Search-result budgets. The routes emit the title absolutely, with no
-  // site-name suffix, so the whole ~60 characters belongs to the article. The
-  // dek is the meta description as well as the standfirst, and a 300-character
-  // dek is a bad standfirst before it is a truncated snippet. Warnings rather
-  // than errors: a title two characters over should not block a publish.
-  const title = row.title ?? "";
-  if (title.length > 60) {
-    warnings.push(`Title is ${title.length} characters. Google truncates around 60.`);
+  // Search-result budgets, measured on whichever field actually reaches the
+  // snippet: `seo_title`/`meta_description` when set, otherwise title/dek. The
+  // routes emit the title absolutely, with no site-name suffix, so the whole
+  // ~60 characters belongs to the article. Warnings rather than errors: a title
+  // two characters over should not block a publish.
+  const searchTitle = row.seo_title || row.title || "";
+  const titleField = row.seo_title ? "seo_title" : "Title";
+  if (searchTitle.length > 60) {
+    warnings.push(`${titleField} is ${searchTitle.length} characters. Google truncates around 60.`);
   }
-  const dek = row.dek ?? "";
-  if (dek.length > 160) {
-    warnings.push(`Dek is ${dek.length} characters. It is the meta description; aim for 140–160.`);
-  } else if (dek && dek.length < 120) {
-    warnings.push(`Dek is ${dek.length} characters. Short for a meta description; aim for 140–160.`);
+  const searchDesc = row.meta_description || row.dek || "";
+  const descField = row.meta_description ? "meta_description" : "Dek";
+  if (searchDesc.length > 160) {
+    warnings.push(`${descField} is ${searchDesc.length} characters. It is the meta description; aim for 140–160.`);
+  } else if (searchDesc && searchDesc.length < 120) {
+    warnings.push(`${descField} is ${searchDesc.length} characters. Short for a meta description; aim for 140–160.`);
+  }
+  // The dek is still the standfirst and the card copy even when it is not the
+  // snippet, so an overlong one is a layout problem regardless.
+  if (row.meta_description && (row.dek ?? "").length > 200) {
+    warnings.push(`Dek is ${row.dek.length} characters. Long for a standfirst and a listing card.`);
   }
 
   const words = wordCount(body);
