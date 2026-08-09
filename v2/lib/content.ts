@@ -165,13 +165,53 @@ export type Author = {
   isReviewer: boolean;
 };
 
-export type Category = { slug: string; name: string; blurb: string };
+/* `blurb` is the on-page label under the category name and is deliberately
+   terse. `metaTitle` and `metaDescription` are what search results show, where
+   the budgets are ~60 and ~160 characters and the copy has to stand alone
+   without the page around it. The old shared formula, "{name} guides for
+   buying property in Panama", was also wrong on three of the four: residency,
+   money and living are not about buying property. */
+export type Category = {
+  slug: string;
+  name: string;
+  blurb: string;
+  metaTitle: string;
+  metaDescription: string;
+};
 
 export const categories: Category[] = [
-  { slug: "buying", name: "Buying", blurb: "Process, contracts, due diligence" },
-  { slug: "residency", name: "Residency", blurb: "Visas, permits, citizenship" },
-  { slug: "money", name: "Money", blurb: "Banking, taxes, financing" },
-  { slug: "living", name: "Living", blurb: "Cost of living, healthcare, schools" },
+  {
+    slug: "buying",
+    name: "Buying",
+    blurb: "Process, contracts, due diligence",
+    metaTitle: "Buying Property in Panama: Guides for Foreign Buyers",
+    metaDescription:
+      "How to buy property in Panama as a foreigner: the process step by step, what closing actually costs, and how to check title before you commit.",
+  },
+  {
+    slug: "residency",
+    name: "Residency",
+    blurb: "Visas, permits, citizenship",
+    metaTitle: "Panama Residency: Visas, Permits and Requirements",
+    metaDescription:
+      "Panama's residency routes compared: the Pensionado, Friendly Nations and Qualified Investor visas, what each one requires, and which fits your situation.",
+  },
+  {
+    slug: "money",
+    name: "Money",
+    blurb: "Banking, taxes, financing",
+    metaTitle: "Money in Panama: Banking, Taxes and Cost of Living",
+    metaDescription:
+      "Banking, property taxes and everyday costs in Panama, built from official figures: opening an account, what you owe, and what a month really runs.",
+  },
+  {
+    slug: "living",
+    name: "Living",
+    blurb: "Cost of living, healthcare, schools",
+    metaTitle: "Living in Panama: Costs, Healthcare and Daily Life",
+    metaDescription:
+      "What living in Panama is actually like: healthcare you can join, schools, getting around, and which towns suit which kind of move. Every figure sourced.",
+  },
 ];
 // NB: "areas" is deliberately not a category. /areas/[slug] is its own route,
 // and a category of the same name would collide with it under /[category]/[slug].

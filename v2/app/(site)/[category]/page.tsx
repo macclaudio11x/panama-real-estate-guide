@@ -22,8 +22,9 @@ export async function generateMetadata({
   const cat = categories.find((c) => c.slug === category);
   if (!cat) return {};
   return {
-    title: `${cat.name} guides for buying property in Panama`,
-    description: cat.blurb,
+    title: { absolute: cat.metaTitle },
+    description: cat.metaDescription,
+    alternates: { canonical: `/${category}` },
   };
 }
 

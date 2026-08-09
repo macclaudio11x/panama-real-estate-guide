@@ -37,7 +37,12 @@ export async function generateMetadata({
   // which at least lets the crawler fall back to the site default.
   const og = article.ogImagePath ? absoluteMedia(article.ogImagePath) : null;
   return {
-    title: article.title,
+    // Absolute, matching the project route. The layout template appends
+    // "| Panama Real Estate Guide", which is 27 of the ~60 characters Google
+    // shows before it truncates. On an article whose title is already carrying
+    // the keyword, that is a quarter of the budget spent on branding the
+    // domain name already communicates.
+    title: { absolute: article.title },
     description: article.dek ?? undefined,
     alternates: { canonical: `/${category}/${slug}` },
     openGraph: {

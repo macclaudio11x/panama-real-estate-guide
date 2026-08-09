@@ -56,8 +56,8 @@ const FAQ = {
 };
 
 const ARTICLE_FIELDS = {
-  title: { type: "string" },
-  dek: { type: "string", description: "Standfirst. Also the meta description and the listing card copy." },
+  title: { type: "string", description: "H1 and search-result title, emitted with no site-name suffix. Keep at or under 60 characters, keyword first." },
+  dek: { type: "string", description: "Standfirst. Also the meta description and the listing card copy, so keep it 140–160 characters and able to stand alone." },
   body: { type: "string", description: "Markdown. Do NOT include an FAQ heading — the template appends one from `faqs`. Charts go in a ```chart fenced JSON block." },
   faqs: { type: "array", items: FAQ },
   sources: { type: "array", items: SOURCE },

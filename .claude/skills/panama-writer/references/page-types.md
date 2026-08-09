@@ -1,5 +1,23 @@
 # Page types
 
+## Search metadata, on every page type
+
+The routes emit the title **absolutely**, with no "| Panama Real Estate Guide"
+suffix appended, so the whole budget belongs to the page.
+
+- **`title`** — 60 characters maximum. It is the H1 and the search-result title
+  at once. Primary keyword first, before the colon. "Boquete Real Estate:
+  Prices, Title and Who It Suits" works. A title that opens with a subordinate
+  clause and reaches the keyword in the ninth word does not.
+- **`dek`** — 140 to 160 characters, and it must read as a complete thought on
+  its own. It is doing three jobs: the standfirst under the headline, the copy
+  on the listing card, and the meta description in search results. Under 140
+  wastes the snippet; over 160 gets cut mid-sentence.
+
+The linter warns on both, so check `lint_article` before you call the page done.
+Neither is a gotcha or a debunk: the title and dek are the only part of the page
+most people ever see, so they carry the same warmth as the body.
+
 Three shapes. Each maps to a different search intent, so each has a different
 skeleton. Read the one you are writing.
 
@@ -97,10 +115,17 @@ Casey Foster structure fits most directly.
    - default: useful aside
    - `warn`: something that costs money if ignored
    - `legal`: a statute, registry, or authority citation
-5. **`When the honest answer is don't`** — the equivalent of the drawback
-   section. A guide that never discourages an action is marketing.
+5. **`Which route fits you`** — the fit section. Match reader situations to
+   the right option, including when a *different* option on our site is the
+   better one ("if your income is documentary-heavy, the Pensionado route is
+   simpler than Friendly Nations, here's that guide"). Honest routing is the
+   differentiator; a section telling the reader not to come is not routing,
+   it is a closed door, and it does not appear on this site.
 6. **Sources** — numbered, full URLs, primary institutions only.
 7. **FAQ**.
+8. **Close with the next step** — one short paragraph bridging to the inquiry
+   form: what we'd need from the reader (budget, timeline, situation) and
+   what they get back. Never close on caveats or a list of unverified items.
 
 ### Reviewer requirement
 

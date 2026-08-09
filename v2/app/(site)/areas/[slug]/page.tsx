@@ -20,10 +20,27 @@ export async function generateMetadata({
   const { slug } = await params;
   const area = getArea(slug);
   if (!area) return {};
-  const title = `${area.name} property guide — prices, projects, title risk`;
-  const description = `${area.projectCount} development${area.projectCount === 1 ? "" : "s"} in ${area.name}, ${area.region}, from ${usd(area.priceFromUsd)}.`;
+  // Absolute and inside ~60 characters including the longest area name, so the
+  // layout's site-name suffix does not push the keyword out of the search
+  // result. The old formula ended in "title risk", which led with the scariest
+  // word on the page before the reader had seen anything they came for.
+  //
+  // Three areas currently carry no projects and no price. Promising "prices and
+  // projects" there, or opening a search snippet with "Compare 0 developments",
+  // advertises the emptiest thing about the page, so those get their own copy
+  // built from what the page does answer.
+  const hasProjects = area.projectCount > 0 && area.priceFromUsd;
+  const title = hasProjects
+    ? `${area.name} Real Estate: Prices and Projects Compared`
+    : `${area.name} Real Estate: Costs, Title and Who It Suits`;
+  const count = `${area.projectCount} development${area.projectCount === 1 ? "" : "s"}`;
+  // The old description was one clause of about fifty characters, which left
+  // most of the snippet empty. This spends the budget on what the page answers.
+  const description = hasProjects
+    ? `Compare ${count} in ${area.name}, ${area.region}, from ${usd(area.priceFromUsd)}. What it costs to live there, how the land is titled, and who the area suits.`
+    : `${area.name}, ${area.region}: what it costs to live there, how the land is titled, who the area suits, and what to check before you buy property here.`;
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: `/areas/${slug}` },
     openGraph: { title, description, url: `/areas/${slug}`, type: "website" },

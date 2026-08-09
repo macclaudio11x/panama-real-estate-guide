@@ -326,6 +326,22 @@ export function lintArticle(row) {
     warnings.push("A paragraph ends on a trailing-dash punchline. Rewrite it.");
   }
 
+  // Search-result budgets. The routes emit the title absolutely, with no
+  // site-name suffix, so the whole ~60 characters belongs to the article. The
+  // dek is the meta description as well as the standfirst, and a 300-character
+  // dek is a bad standfirst before it is a truncated snippet. Warnings rather
+  // than errors: a title two characters over should not block a publish.
+  const title = row.title ?? "";
+  if (title.length > 60) {
+    warnings.push(`Title is ${title.length} characters. Google truncates around 60.`);
+  }
+  const dek = row.dek ?? "";
+  if (dek.length > 160) {
+    warnings.push(`Dek is ${dek.length} characters. It is the meta description; aim for 140–160.`);
+  } else if (dek && dek.length < 120) {
+    warnings.push(`Dek is ${dek.length} characters. Short for a meta description; aim for 140–160.`);
+  }
+
   const words = wordCount(body);
   if (body && words < 900) warnings.push(`Body is ${words} words. Thin for a guide.`);
 

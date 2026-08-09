@@ -13,8 +13,14 @@ Investopedia's structural conventions.
 ## The blend in one line
 
 **Investopedia's structure and sourcing discipline, Casey Foster's practitioner
-directness — and the honesty about drawbacks that neither of them fully has,
-because neither has to tell a reader not to buy.**
+directness, and the fit-honesty neither of them needs: telling each reader
+which town, project, or visa route actually suits them, even when it isn't the
+one on this page.**
+
+The emotional register underneath all of it is optimistic. The reader is
+planning a move they're excited about; the voice is the local friend who has
+done it, is glad they're coming, and wants them to do it right. Rigor is in
+service of the move, never against it.
 
 ---
 
@@ -151,10 +157,27 @@ the same term four times is condescending.
 **No currency conversion.** Panama is dollarized and the balboa is pegged 1:1.
 Writing "$250,000 USD (approximately …)" signals you don't know the market.
 
-**Name the drawback.** Every guide and every project page says who it *doesn't*
-suit. This is the one thing the ten competing broker pages structurally cannot
-do, because they earn on the sale. It is our whole differentiator, so it is not
-optional.
+**Name the drawback, as routing.** Every guide and every project page says who
+it *doesn't* suit, and immediately says where that reader should look instead,
+with a link. This is the one thing the ten competing broker pages structurally
+cannot do, because they earn on one listing and we earn on the inquiry. It is
+our whole differentiator, so it is not optional. But it is a handoff, not a
+warning: "needs walkable nightlife → Casco, not Boquete" converts; "crime is
+rising in Chiriquí" in a retirement listicle does not. Hard negatives (crime
+figures, title disputes, developer failures) appear when the searcher's query
+is *about* that risk, or when omitting them would mislead a buyer about the
+specific thing they're buying, not as ambient tone.
+
+**Answer first, caveat second.** If the query asks "how much" or "which town",
+the page gives a sourced number or a named town before any qualifier. Refusing
+to answer because the honest answer has error bars reads as evasion, ranks
+poorly against pages that do answer, and converts nobody. State the range,
+source it, then say what moves it.
+
+**Close warm.** The last thing on every page is a specific, low-pressure next
+step with the form: what to send us, what comes back. Never end on gaps,
+warnings, or what we haven't verified. (A "what we haven't verified" inventory
+belongs in our notes, not on the page. Unverified claims simply don't appear.)
 
 **Never write a verified claim we haven't verified.** If title status is
 unchecked, the prose says so plainly. "Believed to be titled" is worse than
