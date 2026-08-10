@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { usd } from "@/lib/content";
+import { usd, toPlainText } from "@/lib/content";
 import { listAreas, getArea, getProjectsForArea } from "@/lib/catalog";
 import { getAreaEditorialFull } from "@/lib/editorial";
-import { Button, TitleBadge, SourceNote } from "@/components/ui";
+import { Button, TitleBadge, SourceNote, Prose } from "@/components/ui";
 import { ProjectCard } from "@/components/project-card";
 
 export const revalidate = 60;
@@ -103,7 +103,7 @@ export default async function AreaPage({
               mainEntity: areaFaqs.map((f) => ({
                 "@type": "Question",
                 name: f.q,
-                acceptedAnswer: { "@type": "Answer", text: f.a },
+                acceptedAnswer: { "@type": "Answer", text: toPlainText(f.a) },
               })),
             },
           ]
@@ -184,10 +184,10 @@ export default async function AreaPage({
             <div className="mt-3">
               <TitleBadge status={titleStatus} />
             </div>
-            <p className="mt-3.5 text-[16px] leading-relaxed text-body max-w-[62ch] whitespace-pre-line">
+            <Prose className="mt-3.5 max-w-[62ch]">
               {titleNote ??
                 `We have not yet checked whether land in ${area.name} is titled or held as Rights of Possession. Until we have, treat every listing here as unverified and ask the seller for a finca number before you pay anything.`}
-            </p>
+            </Prose>
             <Link
               href="/buying/titled-vs-rights-of-possession"
               className="inline-block mt-4 font-semibold text-link no-underline hover:underline"
@@ -205,9 +205,7 @@ export default async function AreaPage({
             <h2 className="h2-section max-w-[24ch]">
               What it costs to live in {area.name}
             </h2>
-            <p className="mt-5 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-              {editorial.costOfLivingNote}
-            </p>
+            <Prose className="mt-5 max-w-[70ch]">{editorial.costOfLivingNote}</Prose>
           </div>
         </section>
       )}
@@ -220,14 +218,10 @@ export default async function AreaPage({
               {`Who ${area.name} suits — and who it doesn’t`}
             </h2>
             {editorial.suits && (
-              <p className="mt-5 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-                {editorial.suits}
-              </p>
+              <Prose className="mt-5 max-w-[70ch]">{editorial.suits}</Prose>
             )}
             {editorial.drawbacks && (
-              <p className="mt-4 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-                {editorial.drawbacks}
-              </p>
+              <Prose className="mt-4 max-w-[70ch]">{editorial.drawbacks}</Prose>
             )}
           </div>
         </section>
@@ -240,9 +234,7 @@ export default async function AreaPage({
             <h2 className="h2-section max-w-[24ch]">
               Getting there and getting around
             </h2>
-            <p className="mt-5 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-              {editorial.gettingAroundNote}
-            </p>
+            <Prose className="mt-5 max-w-[70ch]">{editorial.gettingAroundNote}</Prose>
           </div>
         </section>
       )}
@@ -292,9 +284,9 @@ export default async function AreaPage({
                   <p className="font-display text-[15.5px] font-bold text-ink">
                     {f.q}
                   </p>
-                  <p className="mt-2 text-[15px] leading-relaxed text-body">
+                  <Prose className="mt-2 [&_p]:text-[15px] [&_li]:text-[15px]">
                     {f.a}
-                  </p>
+                  </Prose>
                 </div>
               ))}
             </div>

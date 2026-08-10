@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { usd, m2, statusLabel } from "@/lib/content";
+import { usd, m2, statusLabel, toPlainText } from "@/lib/content";
 import { listProjects, getProject, getArea, getProjectsForArea } from "@/lib/catalog";
 import { getProjectEditorial } from "@/lib/editorial";
-import { Button, TitleBadge, SourceNote } from "@/components/ui";
+import { Button, TitleBadge, SourceNote, Prose } from "@/components/ui";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { Turnstile } from "@/components/turnstile";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
@@ -144,7 +144,7 @@ export default async function ProjectPage({
               mainEntity: editorial.faqs.map((f) => ({
                 "@type": "Question",
                 name: f.q,
-                acceptedAnswer: { "@type": "Answer", text: f.a },
+                acceptedAnswer: { "@type": "Answer", text: toPlainText(f.a) },
               })),
             },
           ]
@@ -301,9 +301,9 @@ export default async function ProjectPage({
           {/* The hook — the one specific fact that stops this reading like a
               syndicated listing. Absent until a human has researched it. */}
           {editorial?.hook && (
-            <p className="mt-6 text-[17px] leading-relaxed text-body max-w-[70ch]">
+            <Prose className="mt-6 max-w-[70ch] [&_p]:text-[17px]">
               {editorial.hook}
-            </p>
+            </Prose>
           )}
 
           {/* H2 #1 — prices and floor plans. The single most searched thing
@@ -366,9 +366,7 @@ export default async function ProjectPage({
               <h2 className="h2-section !text-[clamp(23px,2.6vw,28px)]">
                 Where {p.name} actually is
               </h2>
-              <p className="mt-5 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-                {editorial.locationNote}
-              </p>
+              <Prose className="mt-5 max-w-[70ch]">{editorial.locationNote}</Prose>
             </section>
           )}
 
@@ -403,14 +401,10 @@ export default async function ProjectPage({
                 {`Who ${p.name} suits — and who it doesn’t`}
               </h2>
               {editorial.suits && (
-                <p className="mt-5 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-                  {editorial.suits}
-                </p>
+                <Prose className="mt-5 max-w-[70ch]">{editorial.suits}</Prose>
               )}
               {editorial.drawbacks && (
-                <p className="mt-4 text-[16px] leading-relaxed text-body max-w-[70ch] whitespace-pre-line">
-                  {editorial.drawbacks}
-                </p>
+                <Prose className="mt-4 max-w-[70ch]">{editorial.drawbacks}</Prose>
               )}
             </section>
           )}
@@ -423,11 +417,11 @@ export default async function ProjectPage({
             </h2>
             <div className="mt-5 rounded-md border-l-4 border-line bg-paper-warm p-6 max-w-[70ch]">
               <TitleBadge status={editorial?.titleStatus ?? "unknown"} />
-              <p className="mt-3.5 text-[16px] leading-relaxed text-body whitespace-pre-line">
+              <Prose className="mt-3.5">
                 {editorial?.buyingNote ??
                   editorial?.titleNote ??
                   "We have not independently checked the title status, permits, or delivery record for this project. Everything on this page comes from the developer. Ask for the finca number and have an attorney pull the Registro Público entry before you pay a deposit of any size."}
-              </p>
+              </Prose>
               <Link
                 href="/buying/titled-vs-rights-of-possession"
                 className="inline-block mt-4 font-semibold text-link no-underline hover:underline"
@@ -449,9 +443,9 @@ export default async function ProjectPage({
                     <p className="font-display text-[15.5px] font-bold text-ink">
                       {f.q}
                     </p>
-                    <p className="mt-2 text-[15px] leading-relaxed text-body">
+                    <Prose className="mt-2 [&_p]:text-[15px] [&_li]:text-[15px]">
                       {f.a}
-                    </p>
+                    </Prose>
                   </div>
                 ))}
               </div>

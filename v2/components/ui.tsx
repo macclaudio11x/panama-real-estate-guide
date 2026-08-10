@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { TitleStatus } from "@/lib/content";
 import { titleLabel } from "@/lib/content";
 
@@ -109,6 +111,66 @@ export function SectionHead({
       <p className="eyebrow mb-3.5">{eyebrow}</p>
       <h2 className="h2-section max-w-[24ch]">{title}</h2>
       {dek && <p className="dek mt-4 max-w-[62ch]">{dek}</p>}
+    </div>
+  );
+}
+
+/* ── Prose. ───────────────────────────────────────────────────────────────────
+   Editorial fields (hook, suits, drawbacks, buying note, FAQ answers) are
+   authored as markdown, so they have to be parsed. Rendering them as raw JSX
+   text is how v1 shipped a quarter of a million words with zero working body
+   links — the syntax lands on the page as literal `[text](/url)`. Same reason
+   `**bold**` shows its asterisks. Keep every editorial field going through
+   here.
+
+   Deliberately narrow: paragraphs, emphasis, links and lists. These fields are
+   prose, not articles, so headings and images are not offered. */
+export function Prose({
+  children,
+  className = "",
+}: {
+  children: string;
+  className?: string;
+}) {
+  return (
+    <div className={`prose-fields ${className}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          p: ({ children }) => (
+            <p className="text-[16px] leading-relaxed text-body [&+p]:mt-4">
+              {children}
+            </p>
+          ),
+          strong: ({ children }) => (
+            <strong className="font-semibold text-ink">{children}</strong>
+          ),
+          em: ({ children }) => <em className="italic">{children}</em>,
+          a: ({ href, children }) => (
+            <Link
+              href={href ?? "#"}
+              className="text-link underline underline-offset-[3px] decoration-1 hover:no-underline"
+            >
+              {children}
+            </Link>
+          ),
+          ul: ({ children }) => (
+            <ul className="mt-3 mb-1 flex flex-col gap-1.5 pl-5 list-disc marker:text-faint">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="mt-3 mb-1 flex flex-col gap-1.5 pl-5 list-decimal marker:text-faint">
+              {children}
+            </ol>
+          ),
+          li: ({ children }) => (
+            <li className="text-[16px] leading-relaxed text-body">{children}</li>
+          ),
+        }}
+      >
+        {children}
+      </ReactMarkdown>
     </div>
   );
 }

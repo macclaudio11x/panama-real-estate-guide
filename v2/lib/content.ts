@@ -216,3 +216,18 @@ export const statusLabel = {
   "under-construction": "Under construction",
   delivered: "Delivered",
 } as const;
+
+/* Editorial fields are authored as markdown and rendered through <Prose>. The
+   JSON-LD copy of an FAQ answer has no renderer, so the raw syntax would reach
+   Google's rich results as literal `**bold**` and `[text](/url)`. Flatten it. */
+export function toPlainText(md: string): string {
+  return md
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // links → their text
+    .replace(/\*\*([^*]+)\*\*/g, "$1") // bold
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:!?]|$)/g, "$1$2") // italics
+    .replace(/^\s*[-*]\s+/gm, "") // list bullets
+    .replace(/\n{2,}/g, " ")
+    .replace(/\n/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
