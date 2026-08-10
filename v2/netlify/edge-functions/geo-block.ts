@@ -28,6 +28,10 @@
    traffic that is demonstrably all automated.
    ============================================================================= */
 
+/* Deno, not Node: this runs in Netlify's edge runtime, which resolves imports
+   by URL. `next build` typechecks everything under v2/, and tsc cannot resolve
+   a URL specifier, so tsconfig.json excludes this directory. Removing that
+   exclusion fails the build with TS2307. */
 import type { Context } from "https://edge.netlify.com";
 
 /* ISO 3166-1 alpha-2. Keep this list short and keep the evidence with it:
