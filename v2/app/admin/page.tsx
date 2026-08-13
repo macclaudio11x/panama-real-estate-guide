@@ -1,26 +1,18 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
-import { LEAD_STATUSES, STATUS_LABEL, listLeads, statusCounts } from "@/lib/crm";
-import { supabaseAdmin } from "@/lib/supabase";
+import { LEAD_STATUSES, followUps, listLeads, statusCounts } from "@/lib/crm";
+import { EmptyState, LeadListRow, SectionHeading, dueLabel } from "./ui";
 
 /* The overview answers one question — what needs a call today — and then gets
    out of the way. Vanity totals go at the bottom, if anywhere. */
 
-async function articleCounts() {
-  const sb = supabaseAdmin();
-  const [published, draft] = await Promise.all([
-    sb.from("articles").select("id", { count: "exact", head: true }).eq("status", "published"),
-    sb.from("articles").select("id", { count: "exact", head: true }).eq("status", "draft"),
-  ]);
-  return { published: published.count ?? 0, draft: draft.count ?? 0 };
-}
-
 export default async function AdminOverview() {
   const user = await requireAdmin();
-  const [counts, recent, articles] = await Promise.all([
-    statusCounts(),
-    listLeads(),
-    articleCounts(),
+
+  const [counts, recent, queue] = await Promise.all([
+    statusCounts(user),
+    listLeads(user),
+    followUps(user),
   ]);
 
   const open = LEAD_STATUSES.filter((s) => s !== "won" && s !== "lost").reduce(
@@ -28,73 +20,111 @@ export default async function AdminOverview() {
     0,
   );
 
+  const needsWork = [...queue.overdue, ...queue.today, ...queue.stale];
+  const unassigned = user.role === "admin" ? recent.filter((l) => !l.assigned_broker_id) : [];
+
   return (
     <>
-      <h1 className="font-display text-[26px] font-bold text-ink">
-        {user.email.split("@")[0]}
+      <h1 className="font-display text-[24px] font-bold text-ink">
+        {user.name.split(" ")[0]}
       </h1>
-      <p className="mt-1.5 text-[15px] text-muted">
-        {counts.new === 0
-          ? "No new enquiries waiting."
-          : `${counts.new} new ${counts.new === 1 ? "enquiry" : "enquiries"} waiting for a first call.`}
+      <p className="mt-1 text-[14.5px] text-muted">
+        {needsWork.length === 0
+          ? counts.new === 0
+            ? "Nothing waiting."
+            : `${counts.new} new ${counts.new === 1 ? "enquiry" : "enquiries"} to open.`
+          : `${needsWork.length} ${needsWork.length === 1 ? "lead needs" : "leads need"} you today.`}
       </p>
 
-      <div className="mt-7 grid gap-4 grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
+      <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
         {(
           [
             ["New", counts.new, "/admin/leads?status=new"],
-            ["Open", open, "/admin/leads"],
+            ["Open", open, "/admin/pipeline"],
+            ["Overdue", queue.overdue.length, "/admin/follow-ups"],
+            ["Never picked up", queue.stale.length, "/admin/follow-ups"],
             ["Won", counts.won, "/admin/leads?status=won"],
-            ["Articles live", articles.published, null],
-            ["Drafts", articles.draft, null],
           ] as const
-        ).map(([label, value, href]) => {
-          const card = (
-            <div className="rounded-md border border-line bg-white p-5 h-full">
-              <p className="font-display text-[30px] font-bold text-ink leading-none">{value}</p>
-              <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.077em] text-muted">
+        ).map(([label, value, href]) => (
+          <Link key={label} href={href} className="no-underline">
+            <div className="h-full rounded-md border border-line bg-paper p-4 transition-colors hover:border-brand">
+              <p className="font-display text-[28px] font-bold leading-none text-ink">{value}</p>
+              <p className="mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.077em] text-muted">
                 {label}
               </p>
             </div>
-          );
-          return href ? (
-            <Link key={label} href={href} className="no-underline">
-              {card}
-            </Link>
-          ) : (
-            <div key={label}>{card}</div>
-          );
-        })}
+          </Link>
+        ))}
       </div>
 
-      <h2 className="mt-10 font-display text-[18px] font-bold text-ink">Latest enquiries</h2>
-      {recent.length === 0 ? (
-        <p className="mt-3 text-[15px] text-muted">
-          Nothing yet. Submissions from the contact form and the project pages land here.
-        </p>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {recent.slice(0, 8).map((lead) => (
-            <li key={lead.id}>
-              <Link
-                href={`/admin/leads/${lead.id}`}
-                className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-md border border-line bg-white px-4 py-3 no-underline hover:border-brand transition-colors"
-              >
-                <span className="font-display text-[15.5px] font-bold text-ink">
-                  {lead.full_name}
-                </span>
-                <span className="text-[14px] text-muted">
-                  {lead.budget_band ?? "budget not given"}
-                  {lead.project ? ` · ${lead.project.name}` : ""}
-                </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.077em] text-muted">
-                  {STATUS_LABEL[lead.status]}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {needsWork.length > 0 && (
+        <section className="mt-9">
+          <SectionHeading
+            title="Needs you today"
+            count={needsWork.length}
+            tone="urgent"
+            hint="overdue, due today, or never picked up"
+          />
+          <div className="mt-3 flex flex-col gap-2">
+            {needsWork.slice(0, 8).map((lead) => (
+              <LeadListRow
+                key={lead.id}
+                lead={lead}
+                note={lead.next_action_at ? dueLabel(lead.next_action_at) : "never worked"}
+              />
+            ))}
+          </div>
+          {needsWork.length > 8 && (
+            <Link
+              href="/admin/follow-ups"
+              className="mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.077em] text-brand no-underline hover:underline"
+            >
+              All {needsWork.length} →
+            </Link>
+          )}
+        </section>
       )}
+
+      {unassigned.length > 0 && (
+        <section className="mt-9">
+          <SectionHeading
+            title="Waiting for an owner"
+            count={unassigned.length}
+            tone="urgent"
+            hint="nobody has been given these"
+          />
+          <div className="mt-3 flex flex-col gap-2">
+            {unassigned.slice(0, 6).map((lead) => (
+              <LeadListRow key={lead.id} lead={lead} />
+            ))}
+          </div>
+          {unassigned.length > 6 && (
+            <Link
+              href="/admin/leads?pool=unassigned"
+              className="mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.077em] text-brand no-underline hover:underline"
+            >
+              All {unassigned.length} →
+            </Link>
+          )}
+        </section>
+      )}
+
+      <section className="mt-9">
+        <SectionHeading title="Latest enquiries" count={recent.length} />
+        <div className="mt-3">
+          {recent.length === 0 ? (
+            <EmptyState>
+              Nothing yet. Submissions from the contact form and the project pages land here.
+            </EmptyState>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {recent.slice(0, 6).map((lead) => (
+                <LeadListRow key={lead.id} lead={lead} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </>
   );
 }

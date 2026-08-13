@@ -9,17 +9,23 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",
+    "imapflow": "^1.6.6",
+    "mailparser": "^3.9.15",
     "next": "16.2.12",
+    "nodemailer": "^9.0.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.1098.0",
     "@netlify/plugin-nextjs": "^5.15.13",
     "@tailwindcss/postcss": "^4",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
