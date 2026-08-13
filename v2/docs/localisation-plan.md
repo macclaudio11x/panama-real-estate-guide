@@ -840,17 +840,27 @@ Written locale-generically. Phase 1 instantiates it for `de`.
 1. Route tree under `app/(de)/de/`, plus one root layout per route group for
    `<html lang>`.
 
-   **DEFERRED 2026-08-13, and this is a known-wrong interim state.** The root
-   layout split requires `app/admin/layout.tsx` to own its own `<html>`, and
-   that file is carrying uncommitted CRM work. Until the CRM branch lands,
-   `app/layout.tsx` stays as-is and **the German tree inherits
-   `<html lang="en">`**, which is wrong and must not ship.
+   **Root layout split DONE 2026-08-13**, once the CRM work committed. There is
+   no `app/layout.tsx` any more. The fonts, `metadataBase` and the Typekit link
+   live in `components/document-shell.tsx`, and `(site)` and `admin` each own a
+   root layout rendering `<DocumentShell lang="en">`. `app/api/*` needed
+   nothing, being route handlers that render no HTML. Verified: `/` and
+   `/admin` both serve `lang="en"` with the fonts and Typekit link intact.
 
-   The `<html lang>` gate in §9 already blocks it, so this cannot reach
-   production by accident. Do the split as the first task after the CRM work
-   commits: delete `app/layout.tsx`, give `(site)`, `(de)` and `admin` their
-   own, and move the fonts and Typekit link into `<DocumentShell lang>`.
-   `app/api/*` needs nothing, being route handlers that render no HTML.
+   **The route tree under `app/(de)/de/` is still outstanding**, and it brings
+   its own root layout with it:
+
+   ```tsx
+   // app/(de)/layout.tsx
+   export default function DeLayout({ children }) {
+     return <DocumentShell lang="de">{children}</DocumentShell>;
+   }
+   ```
+
+   That was proved against a throwaway `/de` page, which served `lang="de"`
+   while `/` stayed `lang="en"`; the probe was removed rather than left as an
+   empty route group. The `<html lang>` gate in §9 stays until the German pages
+   are real.
 2. `lib/i18n.ts`: `Locale` type, category slug maps both directions, a
    `localePath()` builder, and `Intl` formatters bound to the locale
    (`de-DE` for German dates and number formatting, `es-PA` for Spanish).

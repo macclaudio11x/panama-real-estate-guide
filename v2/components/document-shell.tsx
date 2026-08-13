@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import { Figtree, Source_Sans_3, IBM_Plex_Mono } from "next/font/google";
-import "./globals.css";
+import type { PageLocale } from "@/lib/i18n";
+import "@/app/globals.css";
 
-/* The root layout is now only what every route shares: the document, the
-   fonts, and the stylesheet. Site chrome moved to app/(site)/layout.tsx when
-   /admin arrived — a broker's leads inbox has no business rendering the
-   marketing header and a footer full of guide links. The (site) group is a
-   naming device only; every public URL is unchanged. */
+/* The document itself, shared by every root layout.
+
+   There is no `app/layout.tsx` any more. `<html>` lives in a root layout and a
+   server layout cannot read the pathname, so a single root could only ever
+   hardcode one `lang` — which is how the German tree came to inherit
+   `lang="en"`. The fix is one root layout per route group, each rendering this
+   component with its own locale. Everything those roots genuinely share (the
+   fonts, the stylesheet, the Typekit link, `metadataBase`) lives here so it is
+   still edited in one place.
+
+   Cost: navigating between route groups is a full page load rather than a
+   client-side transition. That only happens on a language switch, and it is
+   the price of a correct `lang` attribute. */
 
 // Display — geometric humanist, the closest freely-licensable face to
 // sofia-pro (Adobe Fonts, which can't be self-hosted). Generous apertures and
@@ -34,24 +43,24 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+/* Spread into each root layout's own `metadata`. Only what is genuinely
+   locale-independent belongs here: the title template and description are
+   site copy and have to be written per language. */
+export const documentMetadata: Metadata = {
   metadataBase: new URL("https://panamarealestateguide.com"),
-  title: {
-    default: "Panama Real Estate Guide — Know what you're buying",
-    template: "%s | Panama Real Estate Guide",
-  },
-  description:
-    "Independent guides to buying property in Panama. Verified figures, titled-land checks, and area-by-area research for foreign buyers.",
 };
 
-export default function RootLayout({
+export function DocumentShell({
+  lang,
   children,
-}: Readonly<{
+}: {
+  /** Becomes `<html lang>`. English is a page locale, not a translation tree. */
+  lang: PageLocale;
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${figtree.variable} ${sourceSans.variable} ${plexMono.variable} h-full antialiased`}
     >
       <head>
