@@ -1,0 +1,80 @@
+Keyword,Cluster,Intent,Vol_US,KD,CPC,Current_Pos,SERP_Weakness,Target_URL,Page_Status,Wave,Rationale
+panama pensionado visa,Pensionado,Commercial,480,29,0.38,not ranking,law firms; one result still quotes $750/$100k,/residency/panama-pensionado-visa,NEW,1,Highest-value residency cluster with no dedicated page; pensionados buy
+panama retirement visa,Pensionado,Commercial,880,26,0.40,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page; head variant
+pensionado visa panama,Pensionado,Commercial,590,25,0.54,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page
+panama pensionado program,Pensionado,Commercial,260,25,0.65,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page; benefits/discounts section
+retirement visa panama,Pensionado,Commercial,170,24,0.40,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page
+panama pensionado visa requirements,Pensionado,Informational,110,21,0.44,not ranking,globalcitizensolutions / harveylaw / relofirm,/residency/panama-pensionado-visa,NEW,1,Requirements H2 with document checklist
+panama retirement visa requirements,Pensionado,Informational,110,22,0.52,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page
+retirement visa for panama,Pensionado,Commercial,90,20,0.53,not ranking,law firms,/residency/panama-pensionado-visa,NEW,1,Same page
+panama pensionado visa benefits,Pensionado,Informational,70,20,0.21,not ranking,thin,/residency/panama-pensionado-visa,NEW,1,Discount table with legal source
+panama friendly nations visa,FNV,Commercial,n/a,med,n/a,not ranking,residencies.io / relofirm / kraemer; broker at #4,/residency/panama-friendly-nations-visa,NEW,1,Broker already ranks #4 so page type is viable
+friendly nations visa panama 2026,FNV,Commercial,n/a,med,n/a,pos 7 (1 imp),year-stamped titles win,/residency/panama-friendly-nations-visa,NEW,1,We already appear for the 2026 variant
+panama friendly nations visa requirements for canadians,FNV,Informational,n/a,low,n/a,pos 66,none,/residency/panama-friendly-nations-visa,NEW,1,Country-list section; link from moving-from-canada
+panama investor visa 300000,Investor visa,Commercial,n/a,med,n/a,pos 7-11 (quoted queries),thin,/residency/panama-qualified-investor-visa,NEW,2,Decree 193 queries already surface us; high-ticket buyers
+golden visa panama,Investor visa,Commercial,n/a,med,n/a,75,generic,/residency/panama-qualified-investor-visa,NEW,2,Same page; Spain golden-visa refugees
+can foreigners buy property in panama,Buying process,Informational,n/a,low,n/a,84,wise.com #1 / Facebook post #3,/buying/can-foreigners-buy-property-in-panama,NEW,1,Weakest commercial SERP found; add 10k-rule section
+can a foreigner buy property in panama,Buying process,Informational,n/a,low,n/a,71,same,/buying/can-foreigners-buy-property-in-panama,NEW,1,Same page
+buying property in panama as a foreigner,Buying process,Informational,n/a,low,n/a,not ranking,brighttax / thelatinvestor,/buying/can-foreigners-buy-property-in-panama,NEW,1,Same page
+panama 10k rule,Buying process,Informational,n/a,low,n/a,not ranking,livinginpanama.com only,/buying/can-foreigners-buy-property-in-panama,NEW,1,Border-zone ownership; nobody covers cleanly
+buying property in panama,Buying process,Informational,n/a,med,n/a,63,#1 casasolution stamped 2025; #2 tax firm,/buying/buying-property-in-panama,EXISTS (refresh),1,Retitle with year + add closing-cost table + link new pages
+how to buy a house in panama,Buying process,Informational,n/a,med,n/a,75,same,/buying/panama-property-buying-process-guide,EXISTS (refresh),1,Consolidate with buying-property? Two pages overlap
+buy house in panama,Buying process,Commercial,880,33,0.25,not ranking,listing-ish,/buying/panama-property-buying-process-guide,EXISTS,2,Head variant
+panama closing costs real estate,Closing costs,Informational,n/a,low,n/a,not ranking,panamaequity / casasolution / templated thelatinvestor; figures contradict,/buying/panama-closing-costs,NEW,1,Itemised table + legal source + worked examples
+property taxes fees and costs in panama,Closing costs,Informational,n/a,low,n/a,not ranking,thelatinvestor templated,/buying/panama-closing-costs,NEW,1,Same page
+panama property tax,Property tax,Informational,n/a,low,n/a,84 (law 66 query),liveandinvestoverseas / kraemer / blog tag pages,/money/panama-property-taxes,NEW,2,Rates page distinct from exemption page
+panama property tax exemption,Property tax,Informational,n/a,low,n/a,not ranking,blog tag pages,/money/panama-property-tax-exemption-extended,EXISTS,1,Already sourced; needs title/CTR pass + links
+mortgage in panama for foreigners,Financing,Commercial,n/a,low,n/a,not ranking,thelatinvestor quotes 6.5-8.5% only,/buying/panama-mortgages-for-foreigners,NEW,1,Bank-by-bank table; broker-adjacent
+panama real estate financing,Financing,Commercial,n/a,low,n/a,not ranking,casasolution mortgage guide Aug 2026,/buying/panama-mortgages-for-foreigners,NEW,1,Same page
+buying pre construction panama,Pre-construction,Commercial,n/a,low,n/a,not ranking,broker pages,/buying/pre-construction-panama,NEW,1,Hub for 22 preselling/under-construction project pages
+is it safe to buy property in panama,Objection,Informational,n/a,low,n/a,not ranking,coastalpanamaproperties article,/buying/is-it-safe-to-buy-property-in-panama,NEW,2,Objection page; links to title/ROP guide
+titled vs rights of possession panama,Title,Informational,n/a,low,n/a,not ranking,thin,/buying/titled-vs-rights-of-possession,EXISTS,1,Link target for all buying pages
+real estate coronado panama,Coronado,Commercial,260,1,0.18,not ranking,playacommunity / encuentra24,/areas/coronado,NEW,1,KD 1; area page type ranks fast on this domain
+coronado panama homes for sale,Coronado,Transactional,210,0,0.18,not ranking,same,/areas/coronado,NEW,1,KD 0
+panama realtor coronado,Coronado,Commercial,210,6,0.18,not ranking,small brokers,/areas/coronado,NEW,1,Broker ask is literally the query
+coronado panama real estate for sale,Coronado,Transactional,50,0,0.14,not ranking,same,/areas/coronado,NEW,1,KD 0
+coronado panama real estate,Coronado,Commercial,n/a,low,n/a,2.5 (2 imp),same,/buying/coronado-real-estate-guide,EXISTS,1,Guide exists; area page becomes canonical listing surface
+panama pacifico real estate,Panama Pacifico,Commercial,n/a,low,n/a,not ranking,homepage at #2,/areas/panama-pacifico,NEW,1,Open SERP
+casco viejo real estate,Casco Viejo,Commercial,n/a,low,n/a,not ranking,brokers,/areas/casco-viejo,NEW,1,Ley 519 incentives lead already researched
+costa del este panama real estate,Costa del Este,Commercial,110,2,0.38,21,panamaequity / encuentra24 / panamaRE,/areas/costa-del-este,EXISTS,1,Pos 21 with KD 2; add prices per building + link 7 CdE projects
+costa del este panama apartments,Costa del Este,Transactional,n/a,low,n/a,25,listing pages,/areas/costa-del-este,EXISTS,1,Same page; rent + sale sections
+boquete real estate,Boquete,Commercial,n/a,med,n/a,25-49,viviun / panamaRE / small brokers,/buying/boquete-panama-real-estate,EXISTS,1,Pos 8.5 for some variants; CTR pass + link Pino Alto/BCC/Towncenter
+boquete panama property,Boquete,Commercial,n/a,med,n/a,26,same,/areas/boquete,EXISTS,1,Area page pos 14; consolidate signals
+bocas del toro real estate,Bocas,Commercial,n/a,low,n/a,7,discoverbocasrealty / .html broker / hotel blog,/buying/bocas-del-toro-real-estate,EXISTS,1,Already pos 7; title pass + red frog section
+pedasi panama real estate,Pedasi,Commercial,n/a,med,n/a,not ranking,casasolution / properstar,/areas/pedasi,EXISTS,2,Add prices + Venao comparison
+santa maria panama real estate,Santa Maria,Commercial,50,3,0.52,not ranking,brokers,/areas/santa-maria,EXISTS,2,6 projects there; add price table
+punta pacifica panama real estate,Punta Pacifica,Commercial,40,7,0.46,not ranking,PPR,/areas/punta-pacifica,EXISTS,2,Add building-level prices
+rio hato panama real estate,Rio Hato,Commercial,50,0,0.26,not ranking,thin,/areas/rio-hato,EXISTS,2,KD 0
+el valle de anton real estate,El Valle,Commercial,n/a,low,n/a,not ranking,small brokers,/areas/el-valle-de-anton,NEW,1,Retiree town; ranks on publish
+david panama real estate,David,Commercial,n/a,low,n/a,4 (living in david),thin,/areas/david,NEW,1,Chiriqui hub; hospital/airport angle
+volcan panama real estate,Volcan,Commercial,n/a,low,n/a,not ranking,thin,/areas/volcan,NEW,1,Cheaper-than-Boquete angle
+las tablas / chitre real estate,Azuero,Commercial,n/a,low,n/a,not ranking,thin,/areas/las-tablas,NEW,2,Azuero interior
+playa blanca farallon real estate,Pacific,Commercial,n/a,low,n/a,not ranking,thin,/areas/playa-blanca,NEW,2,Near Buenaventura + Rio Hato
+best places to live in panama,Live,Informational,320,8,0.31,79,expatexchange / IL 2023 / relofirm,/living/best-places-to-live-in-panama,NEW,1,Split from retire page; #2 is 2023-dated
+where to live in panama,Live,Informational,320,9,0.31,73,same,/living/best-places-to-live-in-panama,NEW,1,Same page
+best places to live in panama for expats,Live,Informational,110,3,0.28,67,same,/living/best-places-to-live-in-panama,NEW,1,KD 3
+best place to live in panama central america,Live,Informational,110,4,0.41,90,same,/living/best-places-to-live-in-panama,NEW,1,KD 4
+living in panama,Live,Informational,1300,20,0.36,not ranking,PRT / IL / expat.com,/living/living-in-panama,EXISTS,2,Head; needs depth + dated + bylined
+expat communities in panama,Live,Informational,390,6,0.38,69,expatexchange threads,/buying/panama-retirement-communities,EXISTS (retarget),2,KD 6; page is retitled toward retirement communities; needs a sibling
+best neighborhoods panama city,Panama City,Informational,n/a,low,n/a,67,relofirm / brokers,/buying/best-neighborhoods-panama-city-expats,EXISTS,1,90 imp at pos 67; add per-zone price/m2 table + link 15 area pages
+panama city neighborhoods,Panama City,Informational,170,10,0.00,59,same,/buying/best-neighborhoods-panama-city-expats,EXISTS,1,Same page
+living in panama city panama,Panama City,Informational,720,14,0.33,not ranking,PRT / IL,/living/living-in-panama-city,NEW,2,No page for the city itself
+best places to retire in panama,Retire,Informational,170,3,0.31,68 (657 imp),Forbes / USNews top 3; #4-8 beatable,/living/best-places-to-retire-in-panama,EXISTS,1,Our biggest impression term; CTR + link pass; realistic target pos 4-8
+retire in panama,Retire,Informational,880,24,0.57,96,IL / PRT / taxesforexpats,/living/retire-in-panama,EXISTS,1,Head; page exists and is sourced; needs links + time
+retiring in panama,Retire,Informational,720,12,0.28,not ranking,same,/living/retire-in-panama,EXISTS,1,KD 12
+retiring in panama dangers,Objection,Informational,260,11,0.92,not ranking,listicles,/living/retiring-in-panama-pros-and-cons,NEW,2,Highest CPC on the list; objection content was stripped in July
+pros and cons of retiring in panama,Objection,Informational,110,5,0.39,not ranking,listicles,/living/retiring-in-panama-pros-and-cons,NEW,2,KD 5
+retiring in panama pros and cons,Objection,Informational,170,12,0.57,not ranking,listicles,/living/retiring-in-panama-pros-and-cons,NEW,2,Same page
+is panama a good place to retire,Objection,Informational,140,22,0.66,93,listicles,/living/retiring-in-panama-pros-and-cons,NEW,2,Same page
+retirement homes in panama central america,Retire,Commercial,50,2,2.15,55,thin,/buying/panama-retirement-communities,EXISTS,1,Highest CPC in Semrush export; KD 2; we already rank 55
+retirement homes in panama,Retire,Commercial,170,11,0.00,76,thin,/buying/panama-retirement-communities,EXISTS,1,Same page
+moving to panama from usa,Moving,Informational,n/a,low,n/a,87,two shipping companies in top 3,/living/moving-to-panama-from-usa,NEW,2,Country-specific sibling to Canada/UK/Texas pages
+moving to panama from canada,Moving,Informational,n/a,low,n/a,49,thin,/living/moving-to-panama-from-canada,EXISTS,1,Pos 16-49; CTR pass
+panama real estate agents,Agents,Commercial,110,50,1.14,not ranking,directories,/buying/panama-real-estate-agents,NEW,2,ACOBIR licensing explainer that ends in our broker
+panama cost of living vs us,Money,Informational,110,27,0.00,60,numbeo / wise,/money/panama-cost-of-living-2026,EXISTS,2,Add US-city comparison table
+panama real estate,Head,Commercial,3600,31,0.26,not ranking,brokers AS 12-35,/for-sale,NEW (surface),3,Needs browsable inventory not an article
+panama homes for sale,Head,Transactional,1300,23,0.26,not ranking,portals,/for-sale,NEW (surface),3,Same
+panama property for sale,Head,Transactional,1000,30,0.25,not ranking,portals,/for-sale,NEW (surface),3,Same
+homes for sale in the republic of panama,Head,Transactional,320,0,0.25,not ranking,thin,/for-sale,NEW (surface),3,KD 0 variant
+panama condos for sale,Head,Transactional,n/a,med,n/a,3-7 (1 imp each),properstar / FL noise,/buying/condos-for-sale-panama-buyers-guide,EXISTS,1,Already pos 7 for variants; link project pages
+beachfront property panama,Head,Transactional,n/a,med,n/a,6 (1 imp),jamesedition / panamaequity,/for-sale/beach,NEW (surface),3,Beach filter of the inventory surface
