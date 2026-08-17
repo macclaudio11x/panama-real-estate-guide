@@ -51,6 +51,414 @@
   status = 410
   force = true
 
+# =============================================================================
+# 301 — /de/ article tree, restored from 410 (53 URLs)
+# =============================================================================
+# Supersedes the "/de/* -> 410" rule below FOR THESE 53 URLS ONLY. The blanket
+# 410 stays in place as the catch-all for the rest of the tree.
+#
+# Why this reverses part of the 2026-07-31 decision. That decision rested on
+# two premises which the six weeks since have falsified:
+#
+#   1. "These 405 URLs earned 30 clicks in 119 days." True in aggregate, false
+#      for the /de/ subset. The German tree alone earned 28 clicks and
+#      1938 impressions in the 90 days to 2026-08-16, and Germany is now the
+#      site's #3 country by clicks. The /es/ and /pt/ trees are the ones that
+#      earned nothing.
+#
+#   2. "Bulk redirects to loosely-related pages are treated as soft 404s."
+#      Correct as a general rule, and these are not loosely related. Every one
+#      of the 53 targets below was resolved by following that slug's OWN
+#      /articles/<slug>.html redirect, so each is the same article, not a
+#      topical guess. Verified 2026-08-16: 53/53 resolve to a live 200.
+#
+# The measured cost of leaving them at 410, from GSC, is not theoretical:
+#   Aug 1: 63 impressions/day at avg position 14.9
+#   Aug 10: 43 impressions/day at avg position 16.6
+#   Aug 16: 19 impressions/day at avg position 19.4
+# Impressions down ~70% in 16 days and still falling, while 16 real clicks in
+# those same 16 days landed on the 410 page. Those are users, not crawlers.
+#
+# This is a STOPGAP and should be removed. The right fix is German content at
+# these URLs, which is what branch `localisation-de` is for. Until that ships,
+# an English page is a worse answer than a German one and a better answer than
+# an error. Revisit when /de/ has real content.
+#
+# ORDER MATTERS. These must sit ABOVE the `/de/*` 410 rule in this file;
+# Netlify applies the first matching rule and the 410 is force=true.
+# =============================================================================
+
+# 7 clicks, 276 impr, avg pos 23.6
+[[redirects]]
+  from = "/de/articles/retire-in-panama.html"
+  to = "/living/retire-in-panama"
+  status = 301
+  force = true
+
+# 6 clicks, 123 impr, avg pos 5.0
+[[redirects]]
+  from = "/de/articles/10-best-places-to-live-in-panama-2026.html"
+  to = "/buying/best-neighborhoods-panama-city-expats"
+  status = 301
+  force = true
+
+# 2 clicks, 109 impr, avg pos 7.7
+[[redirects]]
+  from = "/de/articles/best-neighborhoods-panama-city-expats.html"
+  to = "/buying/best-neighborhoods-panama-city-expats"
+  status = 301
+  force = true
+
+# 2 clicks, 59 impr, avg pos 7.7
+[[redirects]]
+  from = "/de/articles/panama-drivers-license-foreigners.html"
+  to = "/living/panama-drivers-license-foreigners"
+  status = 301
+  force = true
+
+# 2 clicks, 37 impr, avg pos 5.4
+[[redirects]]
+  from = "/de/articles/panama-real-estate-market-2026.html"
+  to = "/buying/panama-real-estate-market-2026"
+  status = 301
+  force = true
+
+# 2 clicks, 3 impr, avg pos 2.0
+[[redirects]]
+  from = "/de/articles/panama-vs-colombia-retirement.html"
+  to = "/living/panama-vs-colombia-retirement"
+  status = 301
+  force = true
+
+# 1 clicks, 673 impr, avg pos 57.9
+[[redirects]]
+  from = "/de/articles/best-beaches-panama-expats.html"
+  to = "/living/best-beaches-panama-expats"
+  status = 301
+  force = true
+
+# 1 clicks, 54 impr, avg pos 8.6
+[[redirects]]
+  from = "/de/articles/supermarkets-shopping-panama-expats.html"
+  to = "/living/panama-food-guide-expats"
+  status = 301
+  force = true
+
+# 1 clicks, 50 impr, avg pos 8.0
+[[redirects]]
+  from = "/de/articles/atm-cash-panama-guide.html"
+  to = "/money/atm-cash-panama-guide"
+  status = 301
+  force = true
+
+# 1 clicks, 37 impr, avg pos 6.6
+[[redirects]]
+  from = "/de/articles/moving-to-panama-with-pets.html"
+  to = "/living/moving-to-panama-with-pets"
+  status = 301
+  force = true
+
+# 1 clicks, 17 impr, avg pos 8.2
+[[redirects]]
+  from = "/de/articles/panama-healthcare-costs-2026.html"
+  to = "/living/panama-healthcare-costs-2026"
+  status = 301
+  force = true
+
+# 1 clicks, 4 impr, avg pos 14.0
+[[redirects]]
+  from = "/de/articles/start-business-panama-foreigners.html"
+  to = "/residency/start-business-panama-foreigners"
+  status = 301
+  force = true
+
+# 1 clicks, 2 impr, avg pos 5.0
+[[redirects]]
+  from = "/de/articles/bocas-del-toro-real-estate.html"
+  to = "/buying/bocas-del-toro-real-estate"
+  status = 301
+  force = true
+
+# 0 clicks, 57 impr, avg pos 22.1
+[[redirects]]
+  from = "/de/articles/panama-vs-costa-rica-retirement.html"
+  to = "/living/panama-vs-costa-rica-retirement"
+  status = 301
+  force = true
+
+# 0 clicks, 54 impr, avg pos 20.2
+[[redirects]]
+  from = "/de/articles/panama-weather-guide.html"
+  to = "/living/panama-weather-rainy-season-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 53 impr, avg pos 26.1
+[[redirects]]
+  from = "/de/articles/sending-money-panama-wire-transfer.html"
+  to = "/money/sending-money-panama-wire-transfer"
+  status = 301
+  force = true
+
+# 0 clicks, 47 impr, avg pos 12.9
+[[redirects]]
+  from = "/de/articles/getting-around-panama-city-guide.html"
+  to = "/living/getting-around-panama-city-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 47 impr, avg pos 29.9
+[[redirects]]
+  from = "/de/articles/panama-cost-of-living-2026.html"
+  to = "/money/panama-cost-of-living-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 42 impr, avg pos 15.8
+[[redirects]]
+  from = "/de/articles/how-to-buy-property-in-panama-2026-guide.html"
+  to = "/buying/panama-property-buying-process-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 26 impr, avg pos 15.0
+[[redirects]]
+  from = "/de/articles/internet-providers-panama-expats.html"
+  to = "/living/internet-providers-panama-expats"
+  status = 301
+  force = true
+
+# 0 clicks, 18 impr, avg pos 8.0
+[[redirects]]
+  from = "/de/articles/safety-in-panama-2026-real-data-rumors.html"
+  to = "/living/safety-in-panama-2026-real-data-rumors"
+  status = 301
+  force = true
+
+# 0 clicks, 16 impr, avg pos 9.2
+[[redirects]]
+  from = "/de/articles/panama-banking-non-residents-guide.html"
+  to = "/money/panama-banking-non-residents-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 11 impr, avg pos 20.8
+[[redirects]]
+  from = "/de/articles/panama-golden-visa-2026.html"
+  to = "/residency/panama-residency-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 10 impr, avg pos 79.7
+[[redirects]]
+  from = "/de/articles/living-in-panama-city.html"
+  to = "/buying/best-neighborhoods-panama-city-expats"
+  status = 301
+  force = true
+
+# 0 clicks, 10 impr, avg pos 9.7
+[[redirects]]
+  from = "/de/articles/panama-weather-rainy-season-guide.html"
+  to = "/living/panama-weather-rainy-season-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 9 impr, avg pos 23.9
+[[redirects]]
+  from = "/de/articles/panama-investment-opportunities.html"
+  to = "/buying/panama-real-estate-investment-lifestyle-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 8 impr, avg pos 5.9
+[[redirects]]
+  from = "/de/articles/condos-for-sale-panama-buyers-guide.html"
+  to = "/buying/condos-for-sale-panama-buyers-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 8 impr, avg pos 9.5
+[[redirects]]
+  from = "/de/articles/panama-tax-benefits-foreigners-2026.html"
+  to = "/residency/start-business-panama-foreigners"
+  status = 301
+  force = true
+
+# 0 clicks, 8 impr, avg pos 46.4
+[[redirects]]
+  from = "/de/articles/pedasi-rising.html"
+  to = "/areas/pedasi"
+  status = 301
+  force = true
+
+# 0 clicks, 7 impr, avg pos 13.3
+[[redirects]]
+  from = "/de/articles/panama-real-estate-investments.html"
+  to = "/buying/panama-real-estate-investment-lifestyle-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 5 impr, avg pos 4.8
+[[redirects]]
+  from = "/de/articles/apostille-documents-panama-visa.html"
+  to = "/residency/apostille-documents-panama-visa"
+  status = 301
+  force = true
+
+# 0 clicks, 5 impr, avg pos 9.4
+[[redirects]]
+  from = "/de/articles/how-to-rent-apartment-panama.html"
+  to = "/living/apartments-for-rent-panama-city"
+  status = 301
+  force = true
+
+# 0 clicks, 5 impr, avg pos 3.4
+[[redirects]]
+  from = "/de/articles/moving-to-panama-from-canada.html"
+  to = "/living/moving-to-panama-from-canada"
+  status = 301
+  force = true
+
+# 0 clicks, 5 impr, avg pos 13.6
+[[redirects]]
+  from = "/de/articles/panama-property-buying-process-guide.html"
+  to = "/buying/panama-property-buying-process-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 5 impr, avg pos 5.0
+[[redirects]]
+  from = "/de/articles/panama-vs-belize-retirement.html"
+  to = "/living/panama-vs-belize-retirement"
+  status = 301
+  force = true
+
+# 0 clicks, 4 impr, avg pos 17.5
+[[redirects]]
+  from = "/de/articles/panama-vs-portugal-retirement.html"
+  to = "/living/panama-vs-portugal-retirement"
+  status = 301
+  force = true
+
+# 0 clicks, 4 impr, avg pos 10.0
+[[redirects]]
+  from = "/de/articles/santa-catalina-panama.html"
+  to = "/areas/santa-catalina"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 22.0
+[[redirects]]
+  from = "/de/articles/apartments-for-rent-panama-city.html"
+  to = "/living/apartments-for-rent-panama-city"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 39.0
+[[redirects]]
+  from = "/de/articles/panama-food-guide-expats.html"
+  to = "/living/panama-food-guide-expats"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 9.0
+[[redirects]]
+  from = "/de/articles/panama-for-families-with-children.html"
+  to = "/living/living-in-panama"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 8.7
+[[redirects]]
+  from = "/de/articles/playa-venao-panama.html"
+  to = "/areas/playa-venao"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 32.0
+[[redirects]]
+  from = "/de/articles/pros-cons-retiring-panama.html"
+  to = "/living/retire-in-panama"
+  status = 301
+  force = true
+
+# 0 clicks, 3 impr, avg pos 70.7
+[[redirects]]
+  from = "/de/articles/real-cost-of-moving-to-panama.html"
+  to = "/money/real-cost-of-moving-to-panama"
+  status = 301
+  force = true
+
+# 0 clicks, 2 impr, avg pos 9.5
+[[redirects]]
+  from = "/de/articles/boquete-panama-real-estate.html"
+  to = "/buying/boquete-panama-real-estate"
+  status = 301
+  force = true
+
+# 0 clicks, 2 impr, avg pos 5.0
+[[redirects]]
+  from = "/de/articles/dollarization.html"
+  to = "/buying/panama-real-estate-market-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 8.0
+[[redirects]]
+  from = "/de/articles/panama-vs-spain-retirement.html"
+  to = "/living/panama-vs-spain-retirement"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 9.0
+[[redirects]]
+  from = "/de/articles/coronado-real-estate-guide.html"
+  to = "/buying/coronado-real-estate-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 6.0
+[[redirects]]
+  from = "/de/articles/friendly-nations-2026.html"
+  to = "/residency/panama-residency-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 6.0
+[[redirects]]
+  from = "/de/articles/moving-to-panama-from-uk.html"
+  to = "/living/moving-to-panama-from-uk"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 11.0
+[[redirects]]
+  from = "/de/articles/panama-for-digital-nomads-2026.html"
+  to = "/living/panama-for-digital-nomads-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 4.0
+[[redirects]]
+  from = "/de/articles/panama-real-estate-investment-lifestyle-2026.html"
+  to = "/buying/panama-real-estate-investment-lifestyle-2026"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 10.0
+[[redirects]]
+  from = "/de/articles/panama-sim-card-guide.html"
+  to = "/living/panama-sim-card-guide"
+  status = 301
+  force = true
+
+# 0 clicks, 1 impr, avg pos 7.0
+[[redirects]]
+  from = "/de/articles/things-to-do-in-panama.html"
+  to = "/living/things-to-do-in-panama"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/de/*"
   to = "/410.html"
