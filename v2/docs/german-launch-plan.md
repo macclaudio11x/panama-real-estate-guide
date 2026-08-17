@@ -194,6 +194,31 @@ From §9 of the strategy, reduced to what applies to a six-page ship:
 
 ---
 
+## 7a. Byline and credit on German pages — settled 2026-08-16
+
+Decided, no further discussion needed.
+
+| Field | Who | Renders? |
+|---|---|---|
+| `translator_id` | whoever drafted the German | yes, as "Geschrieben von" |
+| `checked_by` | Rodrigo Newman | **no** — internal only, no credential needed |
+| `reviewer_id` | David Aguirre, **on the English row only** | on the English page, normally |
+
+The German page byline reads:
+
+> Geschrieben von Editorial Team · Deutsche Fassung geprüft von Rodrigo Newman · Original geprüft von David Aguirre, Panama-lizenzierter Immobilienmakler, Lizenz-Nr. PN-2753
+
+**No "✓ Reviewed for accuracy" badge on German pages, and no `reviewedBy` in the JSON-LD.** Both assert that a credentialled reviewer read *this* page, and on a translation nobody will have. The credit line above says what is true instead: who wrote it, who checked the German, and who signed the source.
+
+There is no retrofit cost. The `/de/` route does not exist yet, so it gets built this way from the start.
+
+Two consequences worth carrying:
+
+- **Rodrigo cannot check a page he wrote.** `checked_by <> translator_id` is enforced. He is the checker on anything the AI drafts; if he drafts, that page needs another German reader or it cannot publish.
+- **David's licence is real estate.** It backs property, title and price. It does not back the residency, tax and health-insurance material, which is why 4 of his 5 signatures are on property pages and why `retire-in-panama` is unsigned in English. That page ships without a reviewer credit in either language. `panama-real-estate-market-2026` is inside his competence and unsigned — worth his signature whenever convenient, and the German property page inherits the credit when it lands.
+
+---
+
 ## 8. What I need from Charles
 
 1. **Apply migrations 0011 and 0012.** Blocks every deploy, German or not.
