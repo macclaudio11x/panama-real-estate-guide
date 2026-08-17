@@ -50,6 +50,33 @@ B2 is the real one. The `article_translations` CHECK constraint refuses `status 
 
 **I can draft the German. I cannot be the checker** — the constraint forbids the translator signing their own work, and it is right to. This needs one German-reading human who is not me. No licence required; a bilingual editor qualifies. Until that person exists, German pages can be written and staged as drafts but cannot go live.
 
+### The constraints were tested, not assumed
+
+Probed against the live table on 2026-08-16:
+
+| Attempt | Result |
+|---|---|
+| Draft row, no checker | **201, accepted** |
+| Publish, no checker | **400**, `article_translations_check_before_publish` |
+| Publish, `checked_by = translator_id` | **400**, `article_translations_check_is_independent` |
+
+So **writing is entirely unblocked** and the gate bites only at publish. Draft the library now, settle the recording question before anything goes live.
+
+### Blind back-translation, and the evidence it works
+
+A second pass by the drafter catches slips and misses blind spots: the same model that chose a wrong idiom confidently will bless it on review. The substitute we have is a **blind back-translation** — a separate agent that sees only the German, is forbidden from searching or fetching any source, renders it back to English and inventories every claim. Meaning drift then shows up as a diff against the English row, because the checker cannot pattern-match the drafter's choices.
+
+Run against the first page (`auswandern-nach-panama-als-rentner`) on 2026-08-16 it produced **zero figure drift across 97 claims** and about fifteen real defects. The ones worth recording, because they show what the method is for:
+
+- **`Nachlass` used throughout for *descuento*.** In modern German that primarily means a decedent's estate, and this is a page for retirees discussing law, so the estate reading is primed. It appeared in a heading, a summary bullet, a table header and three subheads. This is precisely the fluent-confident-wrong failure a self-review does not catch.
+- **Two grammar errors** in inserted glosses: `Neben *tituliertes Eigentum*` (needs dative) and `gebrauchtes Hausrat` (masculine).
+- **A self-contradiction**: the summary said the reduced threshold applies "once the home belongs to you", where the body correctly requires a purchase over $100,000.
+- **A misattribution**: "Artikel 200 des Anforderungsblatts" — a requirements sheet has no articles; art. 200 belongs to Decreto Ejecutivo 320 de 2008, which the sheet reproduces. **The English row is loose in the same way and should be corrected too.**
+- **Calques**: "den tiefsten Mietmarkt" (reads as *cheapest* in German), "Panama besteuert territorial".
+- **A missing premise**: balboa figures were quoted from statute and silently glossed as USD without ever stating the 1:1 peg — the one thing a German reader genuinely does not know.
+
+All fixed, re-verified by grep. **Conclusion: the method is worth the step and is not a fig leaf, but it validates figures and terminology rather than idiom.** Whether the prose reads as native German is still unchecked, which is what the ~$150 freelance spot-check in §8 buys.
+
 ---
 
 ## 3. Recommended scope for the first ship
