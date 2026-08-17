@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import type { TitleStatus } from "@/lib/content";
+import type { PageLocale } from "@/lib/i18n";
 
 /* =============================================================================
    Editorial content — read from Supabase
@@ -150,14 +151,139 @@ export type ArticleFull = {
   readMinutes: number | null;
   ogImagePath: string | null;
   author: ArticleAuthor | null;
+  /* The credentialled signature, and an E-E-A-T claim to the reader: this
+     person read THIS page. Only ever set on an English row. On a translation
+     it stays null, because nobody credentialled has read the translated text —
+     see `sourceReviewer` for the honest version of that credit. */
   reviewer: ArticleAuthor | null;
   reviewedOn: string | null;
+
+  /* ── Translation-only fields ───────────────────────────────────────────────
+     Null on English rows. Together these render the byline settled in
+     docs/german-launch-plan.md §7a: written by X, German checked by Y,
+     original reviewed by Z. The "✓ Reviewed for accuracy" badge and the
+     JSON-LD `reviewedBy` are deliberately NOT driven by these, because both
+     assert that a credentialled reviewer read this page.
+     ------------------------------------------------------------------------ */
+  locale: PageLocale;
+  translator: ArticleAuthor | null;
+  /* Who signed the ENGLISH source. Rendered as "Original geprüft von …",
+     never as a review of the translation. */
+  sourceReviewer: ArticleAuthor | null;
+  sourceReviewedOn: string | null;
 };
+
+/* The columns every author join needs. One string so the English and
+   translation queries cannot drift apart. */
+const AUTHOR_COLS = "name, title, bio, credential, avatar_url";
+
+type AuthorRow = {
+  name: string;
+  title: string | null;
+  bio: string | null;
+  credential: string | null;
+  avatar_url: string | null;
+} | null;
+
+const one = <T,>(v: T | T[] | null): T | null =>
+  Array.isArray(v) ? (v[0] ?? null) : v;
+
+const toAuthor = (a: AuthorRow): ArticleAuthor | null =>
+  a
+    ? {
+        name: a.name,
+        title: a.title,
+        bio: a.bio,
+        credential: a.credential,
+        avatarUrl: a.avatar_url,
+      }
+    : null;
+
+/* =============================================================================
+   Translated articles
+   =============================================================================
+   A translated page is the same article in another language, not a different
+   article. So the facts that are language-neutral — sources, cover image,
+   reading time, and who signed the original — are read from the English row
+   and never duplicated. Only the prose comes from `article_translations`.
+
+   THE RULE THAT MATTERS: a missing translation returns null. It never falls
+   back to the English row. A `/de/` URL serving English text under an hreflang
+   tag claiming German is duplicate content and a bad answer at the same time,
+   and it is exactly what the machine-translated tree did before it was
+   withdrawn.
+   ============================================================================= */
+async function getArticleTranslation(
+  locale: Exclude<PageLocale, "en">,
+  categorySlug: string,
+  slug: string,
+): Promise<ArticleFull | null> {
+  const { data, error } = await supabase
+    .from("article_translations")
+    .select(
+      `title, dek, seo_title, meta_description, body, faqs,
+       translator:authors!article_translations_translator_id_fkey ( ${AUTHOR_COLS} ),
+       article:articles!article_translations_article_id_fkey (
+         sources, read_minutes, og_image_path, status, reviewed_on,
+         category:categories!articles_category_id_fkey ( slug ),
+         author:authors!articles_author_id_fkey ( ${AUTHOR_COLS} ),
+         reviewer:authors!articles_reviewer_id_fkey ( ${AUTHOR_COLS} )
+       )`,
+    )
+    .eq("lang", locale)
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const article = one(data.article as never) as {
+    sources: SourceRef[] | null;
+    read_minutes: number | null;
+    og_image_path: string | null;
+    status: string;
+    reviewed_on: string | null;
+    category: { slug: string } | { slug: string }[] | null;
+    author: AuthorRow | AuthorRow[];
+    reviewer: AuthorRow | AuthorRow[];
+  } | null;
+
+  /* An orphaned translation of an unpublished or recategorised article is a
+     404, not a page. Publishing the German while the English is a draft would
+     put the translation ahead of a source nobody has approved. */
+  if (!article || article.status !== "published") return null;
+  if (one(article.category)?.slug !== categorySlug) return null;
+
+  return {
+    title: data.title,
+    dek: data.dek,
+    seoTitle: data.seo_title,
+    metaDescription: data.meta_description,
+    body: data.body,
+    faqs: (data.faqs as Faq[]) ?? [],
+    /* Shared, never translated. Source titles stay in their own language so a
+       reader can find the document; the gloss around them is the writer's job. */
+    sources: article.sources ?? [],
+    readMinutes: article.read_minutes,
+    ogImagePath: article.og_image_path,
+    author: toAuthor(one(article.author)),
+    reviewer: null,
+    reviewedOn: null,
+    locale,
+    translator: toAuthor(one(data.translator as never)),
+    sourceReviewer: toAuthor(one(article.reviewer)),
+    sourceReviewedOn: article.reviewed_on,
+  };
+}
 
 export async function getArticleFull(
   categorySlug: string,
   slug: string,
+  locale: PageLocale = "en",
 ): Promise<ArticleFull | null> {
+  if (locale !== "en") {
+    return getArticleTranslation(locale, categorySlug, slug);
+  }
   const { data: category } = await supabase
     .from("categories")
     .select("id")
@@ -179,20 +305,6 @@ export async function getArticleFull(
 
   if (error || !data) return null;
 
-  const author = Array.isArray(data.author) ? data.author[0] : data.author;
-  const reviewer = Array.isArray(data.reviewer) ? data.reviewer[0] : data.reviewer;
-
-  const toAuthor = (a: typeof author): ArticleAuthor | null =>
-    a
-      ? {
-          name: a.name,
-          title: a.title,
-          bio: a.bio,
-          credential: a.credential,
-          avatarUrl: a.avatar_url,
-        }
-      : null;
-
   return {
     title: data.title,
     dek: data.dek,
@@ -203,8 +315,12 @@ export async function getArticleFull(
     sources: (data.sources as SourceRef[]) ?? [],
     readMinutes: data.read_minutes,
     ogImagePath: data.og_image_path,
-    author: toAuthor(author),
-    reviewer: toAuthor(reviewer),
+    author: toAuthor(one(data.author as never)),
+    reviewer: toAuthor(one(data.reviewer as never)),
     reviewedOn: data.reviewed_on,
+    locale: "en",
+    translator: null,
+    sourceReviewer: null,
+    sourceReviewedOn: null,
   };
 }
