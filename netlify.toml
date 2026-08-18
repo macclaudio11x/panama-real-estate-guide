@@ -459,11 +459,73 @@
   status = 301
   force = true
 
+# =============================================================================
+# 410 GONE — the rest of the machine-translated /de/ tree, by prefix
+# =============================================================================
+# This replaced a single `/de/*` catch-all on 2026-08-18, and it had to.
+#
+# The catch-all was written when nothing lived under /de/ except the withdrawn
+# machine translations. It is `force = true`, so it applies even when a real
+# page exists at the URL — which means the moment the German route tree ships,
+# /de, /de/kaufen and every /de/{kategorie}/{slug} would have returned 410
+# instead of the page. The tree would have been dead on arrival and the failure
+# would have looked exactly like the thing we are trying to fix.
+#
+# So the 410 is now scoped to the four prefixes the old tree actually occupied,
+# inventoried from project/de/ (187 files: articles/, news/, projects/,
+# videos/, and index.html). Nothing outside them was ever published in German,
+# and the new tree deliberately avoids all four: the German slug for /projects
+# is /de/projekte, which is why that map exists.
+#
+# The 53 per-URL 301s above still take precedence — they are more specific and
+# come first, and Netlify applies the first matching rule.
+#
+# Cost, stated rather than hidden: an old German URL outside these prefixes now
+# returns 404 rather than 410. The inventory says there is one such URL,
+# /de/index.html, and the note below explains why it cannot get a rule.
+# =============================================================================
 [[redirects]]
-  from = "/de/*"
+  from = "/de/articles/*"
   to = "/410.html"
   status = 410
   force = true
+
+[[redirects]]
+  from = "/de/news/*"
+  to = "/410.html"
+  status = 410
+  force = true
+
+# NOT /de/projekte/*. The old machine-translated project pages sat at
+# /de/projects/; the German tree's project section, when it ships, is
+# /de/projekte/. Different URLs, and this rule must never be widened to catch
+# both.
+[[redirects]]
+  from = "/de/projects/*"
+  to = "/410.html"
+  status = 410
+  force = true
+
+[[redirects]]
+  from = "/de/videos/*"
+  to = "/410.html"
+  status = 410
+  force = true
+
+# NO RULE FOR /de/index.html, and this is deliberate.
+#
+# The obvious one — 301 /de/index.html -> /de — was written, tested against
+# `netlify dev`, and removed, because Netlify resolves /de to /de/index.html
+# before matching. The rule therefore catches the German home itself and
+# 301s /de to /de: an infinite redirect loop on the most important new URL in
+# the tree. A 410 written the same way would be worse still, killing the home
+# page outright. There is no `from` pattern that catches the old index without
+# also catching the new one.
+#
+# So /de/index.html falls through to the app and returns 404 rather than the
+# 410 it served before. It carries real impressions (`plan b panama`, position
+# 51), so recovering it is worth doing — but through something that can tell
+# the two apart, which the redirect engine cannot.
 
 [[redirects]]
   from = "/pt/*"
