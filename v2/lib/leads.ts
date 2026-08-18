@@ -326,37 +326,13 @@ export async function saveLead(
     ip_hash: ipHash,
   };
 
-  /* ── Surviving an unapplied 0015 ──────────────────────────────────────────
-     `lang` needs a migration that has to be run by hand in the SQL editor,
-     because there is no DDL path from a developer machine on this project. The
-     German forms therefore exist before the column does, and the ordering is
-     not something the code can enforce.
-
-     What it can do is refuse to lose the lead over it. PostgREST answers an
-     unknown column with 42703 (undefined_column), so that one error — and only
-     that one — retries without the field. A German lead then lands intact and
-     merely unlabelled, and starts carrying its language the moment 0015 runs,
-     with no redeploy. Any other error is a real failure and still throws.
-
-     Delete this fallback once 0015 is applied everywhere. It is scaffolding for
-     a known window, not a permanent tolerance for schema drift. */
-  let withLang = true;
-
-  for (let attempt = 0; attempt < 3; attempt++) {
-    const payload = { ...row, reference: newReference() };
-    if (!withLang) delete (payload as { lang?: string }).lang;
-
+  for (let attempt = 0; attempt < 2; attempt++) {
     const { data, error } = await sb
       .from("leads")
-      .insert(payload)
+      .insert({ ...row, reference: newReference() })
       .select("id, reference")
       .single();
     if (!error && data) return data;
-
-    if (error?.code === "42703" && withLang) {
-      withLang = false;
-      continue;
-    }
     // 23505 = unique_violation, i.e. the reference collided. Anything else is
     // not going to be fixed by trying again.
     if (error?.code !== "23505") {
