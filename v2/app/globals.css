@@ -489,6 +489,9 @@
   }
 
   .hero-price-pill-wrap {
+    /* Set per pill by the component. See the note there for why this is a
+       custom property rather than an inline `left`. */
+    left: var(--pill-left);
     /* Duration only — the original never delays the float, just varies its
        period per pill so the four drift out of phase naturally. */
     animation-name: heroFloat;
@@ -568,6 +571,87 @@
     padding: 0.35cqw 0.8cqw;
     white-space: nowrap;
     animation: heroBadge var(--cyc, 11s) cubic-bezier(0.2, 0.9, 0.25, 1.2) infinite backwards;
+  }
+}
+
+/* =============================================================================
+   The collage's labels, on a narrow screen
+   =============================================================================
+   Every size in the block above is `cqw`, so the whole collage scales as one
+   piece against its own width. That is right on the two-column hero, where the
+   container is ~540px and the labels read as tags pinned to a photograph.
+
+   Under 980px the hero stacks and the container becomes the full column width
+   — 339px on a 375px phone. The same percentages then resolve to 6.9px prices,
+   5.9px city names and a 4.2px badge, which is not small type, it is unreadable
+   type. A label nobody can read is not a smaller version of the design; it is
+   the design with its content removed.
+
+   So the labels get a floor in px, and only in the stacked layout. The
+   two-column hero is untouched: this is keyed to the same 980px the grid uses,
+   not to a container query, precisely so the desktop proportions ported from
+   the Claude Design source stay exactly as they were.
+
+   `max()` and not a flat px size, because between 640px and 980px the cqw value
+   is already larger than the floor and should keep winning — the floor only
+   bites where the proportional size has fallen below legibility.
+
+   The pills are free to grow. Their `min-width` is a floor rather than a cap,
+   so bigger text simply widens them; they take up more of the collage on a
+   phone than on a desktop, which is the correct trade for text that can be
+   read at arm's length.
+   ============================================================================= */
+@media (max-width: 979px) {
+  .hero-price-pill {
+    /* One variable so the absolutely-positioned new price can derive its own
+       optical centring from the same number. */
+    --price-fs: max(13px, 2.05cqw);
+    gap: max(6px, 1.1cqw);
+    padding: max(4.5px, 1.25cqw) max(9px, 1.9cqw);
+  }
+
+  .hero-price-old,
+  .hero-price-new {
+    font-size: var(--price-fs);
+  }
+
+  /* Was -1.05cqw against a 2.05cqw font: half the size, less a little, to sit
+     the cap height on the centre line. Same ratio, now against the floored
+     size, or the new price lands off-centre exactly where the floor bites. */
+  .hero-price-new {
+    margin-top: calc(var(--price-fs) * -0.512);
+  }
+
+  .hero-price-name {
+    font-size: max(11px, 1.75cqw);
+  }
+
+  .hero-price-badge {
+    font-size: max(9px, 1.25cqw);
+    padding: max(2.5px, 0.35cqw) max(5px, 0.8cqw);
+  }
+
+  /* 0.22cqw is a sixth of a pixel on a phone, which renders as nothing on some
+     displays and a grey smudge on others. */
+  .hero-price-strike {
+    height: max(1px, 0.22cqw);
+  }
+}
+
+/* Below ~560px the floored type stops fitting between a pill's fixed `left`
+   and the edge of the collage. The two right-hand pills sit at 38.5% and
+   39.2%, which leaves them about 60% of a 284px container — some 18px short of
+   what "$368,000 · Panamá City · +15%" needs at a legible size. They overflowed
+   the container and took the document with them.
+
+   Anchoring them to the right edge instead of a percentage from the left fixes
+   it for any width without touching the type: the pill keeps its size, keeps
+   its row, and simply cannot extend past the edge it is pinned to. The left
+   column is untouched — those pills start at 12% and have room to spare. */
+@media (max-width: 560px) {
+  .hero-price-pill-wrap[data-side="right"] {
+    left: auto;
+    right: 2.5%;
   }
 }
 

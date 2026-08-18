@@ -116,8 +116,23 @@ export function HeroPriceCollage() {
           <div
             key={p.city}
             className="hero-price-pill-wrap absolute"
+            /* The two pills on the right of the collage are marked so the
+               stylesheet can anchor them to the right edge on a narrow screen.
+               A fixed `left` plus text that no longer scales with the container
+               pushes them past it — see the note in globals.css. Derived from
+               the position rather than hardcoded, so moving a pill in PILLS
+               cannot leave the flag pointing at the wrong one. */
+            data-side={parseFloat(p.left) >= 30 ? "right" : "left"}
             style={{
-              left: p.left,
+              /* `left` goes through a custom property and is applied by the
+                 stylesheet, while `top` is set directly. Not an inconsistency:
+                 an inline `left` outranks any selector, so the narrow-screen
+                 rule that re-anchors these pills to the right edge could not
+                 override it without !important — and with both `left` and
+                 `right` in effect the pill stretches between them, squeezes its
+                 flex children, and the price slides under the city name. `top`
+                 is never overridden, so it stays where it reads most plainly. */
+              ["--pill-left" as string]: p.left,
               top: p.top,
               animationDuration: p.floatDuration,
             }}
