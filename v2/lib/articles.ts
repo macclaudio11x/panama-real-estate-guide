@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { supabase } from "@/lib/supabase";
+import type { Locale } from "@/lib/i18n";
 
 /* =============================================================================
    Article index — read from Supabase
@@ -101,6 +102,118 @@ export async function relatedArticles(
   const all = (await listArticles()).filter(
     (a) => !(a.slug === slug && a.categorySlug === categorySlug),
   );
+  const sameCategory = all.filter((a) => a.categorySlug === categorySlug);
+  const rest = all.filter((a) => a.categorySlug !== categorySlug);
+  return [...sameCategory, ...rest].slice(0, limit);
+}
+
+/* =============================================================================
+   Translated article index
+   =============================================================================
+   The same shape as above, so the German listings render through the same card
+   markup as the English ones. What differs is where each field comes from:
+   the title, dek and slug are the translation's own, while read time and the
+   cover image are read from the English row because they are language-neutral
+   and duplicating them is how the two trees drift apart.
+
+   `categorySlug` stays the ENGLISH slug. It is the identifier the rest of the
+   codebase passes around, and the German URL segment is derived from it at
+   render time through `categorySlug()` in lib/i18n.ts. Storing the localised
+   segment here would put the same fact in two places.
+
+   Same rule as the loader in lib/editorial.ts: nothing untranslated appears.
+   A category with no German guides renders an empty listing, never the English
+   ones.
+   ============================================================================= */
+
+type TranslationRow = {
+  slug: string;
+  title: string;
+  dek: string | null;
+  updated_on: string | null;
+  published_at: string | null;
+  article: {
+    read_minutes: number | null;
+    og_image_path: string | null;
+    status: string;
+    category: { slug: string } | { slug: string }[] | null;
+  } | { read_minutes: number | null; og_image_path: string | null; status: string; category: { slug: string } | { slug: string }[] | null }[] | null;
+};
+
+/** Month + year in the target language. The English path keeps its own
+ *  hardcoded table above rather than being rewritten onto Intl, because that
+ *  would change 54 live pages' rendered dates to prove a point about German. */
+function displayDateIn(
+  locale: Locale,
+  updatedOn: string | null,
+  publishedAt: string | null,
+): string {
+  const raw = updatedOn ?? publishedAt;
+  if (!raw) return "";
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat(locale === "de" ? "de-DE" : locale, {
+    year: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(d);
+}
+
+export const listTranslations = cache(
+  async (locale: Locale): Promise<ArticleIndexEntry[]> => {
+    const { data, error } = await supabase
+      .from("article_translations")
+      .select(
+        `slug, title, dek, updated_on, published_at,
+         article:articles!article_translations_article_id_fkey (
+           read_minutes, og_image_path, status,
+           category:categories!articles_category_id_fkey ( slug )
+         )`,
+      )
+      .eq("lang", locale)
+      .eq("status", "published")
+      .order("slug");
+
+    if (error || !data) return [];
+
+    return (data as TranslationRow[])
+      .map((r) => {
+        const article = Array.isArray(r.article) ? r.article[0] : r.article;
+        /* An orphaned translation of an unpublished article is not a page.
+           Same rule the per-slug loader applies, so a row cannot be listed at
+           a URL that would 404 when clicked. */
+        if (!article || article.status !== "published") return null;
+        const cat = Array.isArray(article.category)
+          ? article.category[0]
+          : article.category;
+        if (!cat) return null;
+        return {
+          slug: r.slug,
+          categorySlug: cat.slug,
+          title: r.title,
+          dek: r.dek ?? "",
+          updatedOn: displayDateIn(locale, r.updated_on, r.published_at),
+          readMinutes: article.read_minutes,
+          ogImagePath: article.og_image_path,
+        };
+      })
+      .filter((a): a is ArticleIndexEntry => a !== null);
+  },
+);
+
+export const listTranslationsIn = async (
+  locale: Locale,
+  categorySlug: string,
+) => (await listTranslations(locale)).filter((a) => a.categorySlug === categorySlug);
+
+/** Same ordering rule as `relatedArticles`, over the translated set only. */
+export async function relatedTranslations(
+  locale: Locale,
+  categorySlug: string,
+  slug: string,
+  limit = 3,
+): Promise<ArticleIndexEntry[]> {
+  const all = (await listTranslations(locale)).filter((a) => a.slug !== slug);
   const sameCategory = all.filter((a) => a.categorySlug === categorySlug);
   const rest = all.filter((a) => a.categorySlug !== categorySlug);
   return [...sameCategory, ...rest].slice(0, limit);

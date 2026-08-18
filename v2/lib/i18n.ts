@@ -69,6 +69,27 @@ const SECTION_SLUGS: Record<Locale, Record<string, string>> = {
   },
 };
 
+/* ── Which sections actually exist in a locale ───────────────────────────────
+   A slug map says what `/de/regionen` would be called. It does not say whether
+   that route has been built, and the header and footer are shared markup that
+   will happily link to both trees the moment a locale is passed to them.
+
+   Ship 1 is the four guide categories and nothing else: areas, projects, the
+   about page and the contact form are all later ships (see §6 of
+   docs/german-launch-plan.md). So this list is empty for German today, the
+   German chrome renders guide links only, and turning a section on is one
+   entry here rather than a hunt through components for hardcoded hrefs.
+
+   Guide categories are deliberately not listed. All four exist in every locale
+   by construction — a category index renders whether or not it has articles
+   in that language yet. */
+const LIVE_SECTIONS: Record<Locale, readonly string[]> = {
+  de: [],
+};
+
+export const sectionIsLive = (locale: PageLocale, enSlug: string): boolean =>
+  locale === "en" || LIVE_SECTIONS[locale].includes(enSlug);
+
 /* ── Category names and metadata ─────────────────────────────────────────────
    Written to the ≤60 / 140–160 budgets natively in German rather than
    translated and trimmed. German compounds run long and a translated
@@ -113,6 +134,35 @@ const CATEGORY_COPY: Record<Locale, Record<string, LocalisedCategory>> = {
   },
 };
 
+/* ── Author credentials ──────────────────────────────────────────────────────
+   `authors.credential` is one English string per author and there is exactly
+   one of them in the database today. It renders in the byline next to a
+   licence number, so on a German page it is a visible English leak — and the
+   §7 "no English string leaks" gate would catch it, which is what it is for.
+
+   The German wording is not invented here. It is the line settled in §7a of
+   docs/german-launch-plan.md, verbatim.
+
+   This map is keyed on the English string rather than the author slug, because
+   the byline already has the credential in hand and not the slug. It wants to
+   be a `credential_de` column on `authors` the moment there is a DDL path from
+   this machine; until then one entry in one file beats a migration nobody can
+   apply.
+
+   An unmapped credential falls back to the English string rather than
+   disappearing. A licence number is verifiable in any language and dropping it
+   costs the reader more than reading it in English does — but it is a leak, so
+   it should be added here rather than left to the fallback. */
+const CREDENTIALS: Record<Locale, Record<string, string>> = {
+  de: {
+    "Panama-licensed real estate agent, licence no. PN-2753":
+      "Panama-lizenzierter Immobilienmakler, Lizenz-Nr. PN-2753",
+  },
+};
+
+export const credential = (locale: PageLocale, en: string): string =>
+  locale === "en" ? en : (CREDENTIALS[locale][en] ?? en);
+
 /* ── Chrome strings ──────────────────────────────────────────────────────────
    Header, footer and shared UI. Everything here is `Sie`, including anything
    that reads as an instruction.
@@ -137,6 +187,31 @@ export type UiStrings = {
   footerEditorialTeam: string;
   footerBlurb: string;
   disclaimer: string;
+
+  /* ── Article and listing chrome ───────────────────────────────────────────
+     Every string the German guide templates render around the prose. They are
+     here rather than in the templates so the §9a check has one file to read,
+     and so the "no English string leaks" grep in §9 has one place to fail. */
+  home: string;
+  onThisPage: string;
+  faqHeading: string;
+  sourcesHeading: string;
+  sourceCheckedOn: string;
+  keepReading: string;
+  readMinutes: string;
+  guidesCount: (n: number) => string;
+  emptyCategory: string;
+  emptyCategoryBody: string;
+  /* Byline, per §7a of the plan. Three separate credits, never one badge:
+     nobody credentialled has read the translated text. */
+  writtenBy: string;
+  translationCheckedBy: string;
+  sourceReviewedBy: string;
+  notFoundTitle: string;
+  notFoundBody: string;
+  notFoundLink: string;
+  homeDek: string;
+  homeGuidesHeading: string;
 };
 
 const UI: Record<Locale, UiStrings> = {
@@ -154,6 +229,34 @@ const UI: Record<Locale, UiStrings> = {
       "Unabhängige Recherche zum Immobilienkauf in Panama. Wir nehmen kein Geld für Berichterstattung und sagen es Ihnen, wenn die ehrliche Antwort „Finger weg“ lautet.",
     disclaimer:
       "Panama Real Estate Guide veröffentlicht allgemeine Informationen, keine Rechts-, Steuer- oder Anlageberatung. Wir sind kein zugelassener Immobilienmakler und verwahren keine Kundengelder. Preise, Steuersätze und Bearbeitungszeiten ändern sich: Prüfen Sie das Verifizierungsdatum an jeder Zahl, bevor Sie sich darauf verlassen, und klären Sie Ihren Fall mit einem zugelassenen panamaischen Anwalt.",
+
+    home: "Start",
+    onThisPage: "Auf dieser Seite",
+    faqHeading: "Häufige Fragen",
+    sourcesHeading: "Quellen",
+    sourceCheckedOn: "geprüft am",
+    keepReading: "Weiterlesen",
+    /* Not "Min. Lesezeit": the English side renders a bare "8 min" and the
+       German column is the same width. */
+    readMinutes: "Min.",
+    guidesCount: (n) => (n === 1 ? "1 Ratgeber" : `${n} Ratgeber`),
+    emptyCategory: "Hier ist noch nichts auf Deutsch erschienen",
+    /* Says plainly that the English article exists, because the alternative a
+       reader will otherwise assume is that we have not covered the topic. The
+       link itself is not offered: an English page under a German heading is
+       the substitution this whole tree exists to stop. */
+    emptyCategoryBody:
+      "Wir übersetzen diese Rubrik gerade. Auf Englisch sind die Ratgeber bereits vollständig verfügbar.",
+    writtenBy: "Geschrieben von",
+    translationCheckedBy: "Deutsche Fassung geprüft von",
+    sourceReviewedBy: "Original geprüft von",
+    notFoundTitle: "Diese Seite gibt es nicht",
+    notFoundBody:
+      "Möglicherweise ist sie noch nicht auf Deutsch erschienen. Der englische Teil der Website ist vollständig.",
+    notFoundLink: "Zur deutschen Startseite",
+    homeDek:
+      "Unabhängige Recherche zum Immobilienkauf und zum Leben in Panama. Jede Zahl mit Quelle und Prüfdatum.",
+    homeGuidesHeading: "Ratgeber auf Deutsch",
   },
 };
 
