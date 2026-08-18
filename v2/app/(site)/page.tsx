@@ -2,7 +2,9 @@ import Link from "next/link";
 import { categories, type Project } from "@/lib/content";
 import { listAreas, listProjects } from "@/lib/catalog";
 import { listArticles } from "@/lib/articles";
+import type { Metadata } from "next";
 import { Button, SectionHead } from "@/components/ui";
+import { alternatesForSection } from "@/lib/alternates";
 import { ProjectCard } from "@/components/project-card";
 import { EntryPriceChart } from "@/components/entry-price-chart";
 import { HeroPriceCollage } from "@/components/hero-price-collage";
@@ -18,6 +20,13 @@ function pickFeatured(projects: Project[]) {
 }
 
 export const revalidate = 60;
+
+/* Title and description come from the layout. This exists for the pairing with
+   /de, which is the one thing the layout cannot express — it is shared by every
+   page in the tree and hreflang is per-URL. */
+export const metadata: Metadata = {
+  alternates: alternatesForSection("/"),
+};
 
 export default async function HomePage() {
   const [areas, projects] = await Promise.all([listAreas(), listProjects()]);

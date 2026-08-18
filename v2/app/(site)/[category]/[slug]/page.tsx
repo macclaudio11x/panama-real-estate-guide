@@ -8,6 +8,7 @@ import { categories } from "@/lib/content";
 import { listArticles, relatedArticles } from "@/lib/articles";
 import { getArticleFull } from "@/lib/editorial";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
+import { alternatesForEnArticle } from "@/lib/alternates";
 import { ArticleCta } from "@/components/article-cta";
 import {
   extractHeadings,
@@ -35,6 +36,10 @@ export async function generateMetadata({
   const { category, slug } = await params;
   const article = await getArticleFull(category, slug);
   if (!article) return {};
+  /* Reciprocal with the German page, and emitted only where a translation is
+     actually published — see lib/alternates.ts. An article with no translation
+     keeps exactly the canonical it had before. */
+  const alternates = await alternatesForEnArticle(category, slug);
   // v1 shipped one shared og:image across every article, pointing at a file
   // that was not even in the repo. An article without its own image gets none,
   // which at least lets the crawler fall back to the site default.
@@ -52,7 +57,7 @@ export async function generateMetadata({
     // domain name already communicates.
     title: { absolute: searchTitle },
     description: searchDescription,
-    alternates: { canonical: `/${category}/${slug}` },
+    alternates,
     openGraph: {
       // Deliberately the headline, not the search override. A share card sits
       // next to a link someone is about to open, so it should say what the page

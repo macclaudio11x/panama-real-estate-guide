@@ -6,6 +6,7 @@ import { categories } from "@/lib/content";
 import { listArticlesIn } from "@/lib/articles";
 import { mediaUrl } from "@/lib/media";
 import { Button } from "@/components/ui";
+import { alternatesForSection } from "@/lib/alternates";
 
 export const revalidate = 60;
 
@@ -24,7 +25,9 @@ export async function generateMetadata({
   return {
     title: { absolute: cat.metaTitle },
     description: cat.metaDescription,
-    alternates: { canonical: `/${category}` },
+    /* All four categories exist in both trees by construction, so this pairing
+       needs no lookup. */
+    alternates: alternatesForSection(`/${category}`),
   };
 }
 

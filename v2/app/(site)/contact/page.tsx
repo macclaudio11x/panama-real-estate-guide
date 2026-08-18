@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { listAreas } from "@/lib/catalog";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { Turnstile } from "@/components/turnstile";
+import { alternatesForSection } from "@/lib/alternates";
 
 export const metadata: Metadata = {
   title: "Get your shortlist",
   description:
     "Tell us your budget, timeline, and what you want out of the move. We'll send a shortlist with the title status of everything on it.",
+  alternates: alternatesForSection("/contact"),
 };
 
 const field =

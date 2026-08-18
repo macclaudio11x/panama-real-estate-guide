@@ -3,6 +3,7 @@ import { listAreas } from "@/lib/catalog";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { Turnstile } from "@/components/turnstile";
 import { lead as leadStrings } from "@/lib/i18n";
+import { alternatesForSection } from "@/lib/alternates";
 
 /* The German long form. Same fields, same names, same endpoint as
    app/(site)/contact/page.tsx — a German lead and an English one are the same
@@ -19,7 +20,7 @@ const t = leadStrings("de");
 export const metadata: Metadata = {
   title: { absolute: t.contactMetaTitle },
   description: t.contactMetaDescription,
-  alternates: { canonical: "/de/kontakt" },
+  alternates: alternatesForSection("/contact", "de"),
 };
 
 const field =

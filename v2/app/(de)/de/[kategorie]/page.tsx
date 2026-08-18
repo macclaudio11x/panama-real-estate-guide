@@ -13,6 +13,7 @@ import {
   ui,
 } from "@/lib/i18n";
 import { Button } from "@/components/ui";
+import { alternatesForSection } from "@/lib/alternates";
 
 export const revalidate = 60;
 
@@ -48,7 +49,10 @@ export async function generateMetadata({
   return {
     title: { absolute: hit.copy.metaTitle },
     description: hit.copy.metaDescription,
-    alternates: { canonical: `/de/${kategorie}` },
+    /* Keyed off the ENGLISH slug: alternatesForSection derives every locale's
+       URL from it, so the German canonical comes back through the same map the
+       English page emits. */
+    alternates: alternatesForSection(`/${hit.enSlug}`, "de"),
   };
 }
 

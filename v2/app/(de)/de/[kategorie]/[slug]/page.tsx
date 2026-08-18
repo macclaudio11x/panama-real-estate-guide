@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { listTranslations, relatedTranslations } from "@/lib/articles";
 import { getArticleFull } from "@/lib/editorial";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
+import { alternatesForTranslatedArticle } from "@/lib/alternates";
 import {
   categoryCopy,
   categorySlug,
@@ -57,6 +58,13 @@ export async function generateMetadata({
   const article = await getArticleFull(enCategory, slug, "de");
   if (!article) return {};
 
+  /* The same map the English page emits, canonical swapped. Null only if the
+     row vanished between the two reads, in which case the page itself 404s and
+     a bare canonical is the right thing to leave behind. */
+  const alternates =
+    (await alternatesForTranslatedArticle("de", enCategory, slug)) ??
+    { canonical: `/de/${kategorie}/${slug}` };
+
   /* The cover image is shared with the English row and is not translated. Its
      alt text on the page is empty, so nothing language-specific is asserted. */
   const og = article.ogImagePath ? absoluteMedia(article.ogImagePath) : null;
@@ -66,7 +74,7 @@ export async function generateMetadata({
   return {
     title: { absolute: searchTitle },
     description: searchDescription,
-    alternates: { canonical: `/de/${kategorie}/${slug}` },
+    alternates,
     openGraph: {
       title: article.title,
       description: article.dek ?? undefined,

@@ -5,6 +5,7 @@ import { categories } from "@/lib/content";
 import { listTranslations } from "@/lib/articles";
 import { mediaUrl } from "@/lib/media";
 import { categoryCopy, categorySlug, ui } from "@/lib/i18n";
+import { alternatesForSection } from "@/lib/alternates";
 
 export const revalidate = 60;
 
@@ -28,7 +29,10 @@ export const metadata: Metadata = {
   title: { absolute: "Panama Real Estate Guide — Wissen, was Sie kaufen" },
   description:
     "Unabhängige Ratgeber zum Immobilienkauf in Panama. Geprüfte Zahlen, Titelprüfung und Recherche vor Ort — auf Deutsch, für ausländische Käufer.",
-  alternates: { canonical: "/de" },
+  /* The same map the English home emits, with the canonical swapped. That is
+     what reciprocal means, and building both sides from one function is what
+     stops them drifting. */
+  alternates: alternatesForSection("/", "de"),
 };
 
 export default async function GermanHomePage() {
