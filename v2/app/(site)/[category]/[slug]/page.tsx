@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown, { type Components } from "react-markdown";
+import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { categories } from "@/lib/content";
 import { listArticles, relatedArticles } from "@/lib/articles";
 import { getArticleFull } from "@/lib/editorial";
 import { mediaUrl, absoluteMedia } from "@/lib/media";
-import { ArticleChart, parseChartSpec } from "@/components/article-chart";
 import { ArticleCta } from "@/components/article-cta";
+import {
+  extractHeadings,
+  markdownComponents,
+} from "@/components/article-markdown";
 
 /* Supabase is the source of truth for article content, so the routes have to
    re-read it. 60s means an edit made through the MCP is live within a minute
@@ -65,19 +68,6 @@ export async function generateMetadata({
   };
 }
 
-/* Slug function shared by the heading renderer and the TOC extraction below,
-   so an anchor link always lands on the heading that produced it. */
-const slugify = (text: string) =>
-  text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-function extractHeadings(markdown: string) {
-  const matches = [...markdown.matchAll(/^##\s+(.+)$/gm)];
-  return matches.map((m) => ({ id: slugify(m[1]), label: m[1] }));
-}
-
 /* =============================================================================
    Where the mid-article CTA goes
    =============================================================================
@@ -99,35 +89,6 @@ function splitForCta(markdown: string): [string, string | null] {
 
   return [markdown.slice(0, at), markdown.slice(at)];
 }
-
-/* Hoisted so both halves of a split body render identically. Inline in the JSX
-   this was a fresh object per block, which is also how the two halves would
-   drift apart the first time one was edited. */
-const markdownComponents: Components = {
-  h2: ({ children }) => <h2 id={slugify(String(children))}>{children}</h2>,
-  table: ({ children }) => (
-    <div className="table-scroll">
-      <table>{children}</table>
-    </div>
-  ),
-  /* ```chart blocks render as a figure. Intercepted at `pre` rather than
-     `code` because react-markdown wraps fenced code in <pre>, and a <figure>
-     inside <pre> is invalid HTML that would also inherit monospace styling.
-     Reads the hast node so the raw JSON is available before React escapes it.
-     Anything that is not a valid chart falls through to a normal code block,
-     so a typo shows the JSON rather than breaking the page. */
-  pre: ({ node, children }) => {
-    const code = node?.children?.[0];
-    const cls = code?.type === "element" ? code.properties?.className : null;
-    const isChart = Array.isArray(cls) && cls.includes("language-chart");
-    if (isChart && code?.type === "element") {
-      const first = code.children?.[0];
-      const spec = first?.type === "text" ? parseChartSpec(first.value) : null;
-      if (spec) return <ArticleChart spec={spec} />;
-    }
-    return <pre>{children}</pre>;
-  },
-};
 
 export default async function ArticlePage({
   params,
