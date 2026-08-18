@@ -11,6 +11,7 @@
 
 import { createHash, randomInt } from "node:crypto";
 import { supabaseAdmin } from "./supabase";
+import { LOCALES, lead as leadStrings, type PageLocale } from "./i18n";
 
 /* ── Field mapping ──────────────────────────────────────────────────────────
    The form controls were named for the person filling them in; the columns
@@ -41,8 +42,22 @@ function readIntent(value: string | null): LeadIntent {
     : "shortlist";
 }
 
+/* The form posts a hidden `lang`, written by the route that rendered it. An
+   absent or unrecognised value is "en": every English form on the site predates
+   the field and does not send it, and a lead whose language we are unsure of is
+   an English one by the same construction the 0015 backfill used. */
+function readLang(value: string | null): PageLocale {
+  return value && (LOCALES as readonly string[]).includes(value)
+    ? (value as PageLocale)
+    : "en";
+}
+
 export type LeadInput = {
   intent: LeadIntent;
+  /* Which language the page was in, not which language the visitor's browser
+     is set to. See 0015_lead_lang.sql: the second is frequently English on a
+     German reader's machine, and the broker finds out on the call. */
+  lang: PageLocale;
   full_name: string;
   email: string | null;
   phone: string | null;
@@ -96,6 +111,7 @@ export function readLeadInput(read: (name: string) => unknown): LeadInput {
   const g = (name: string, max = SHORT) => clean(read(name), max);
   return {
     intent: readIntent(g("intent")),
+    lang: readLang(g("lang")),
     full_name: g("full_name") ?? "",
     email: g("email", EMAIL),
     phone: g("phone"),
@@ -127,13 +143,24 @@ export function readLeadInput(read: (name: string) => unknown): LeadInput {
    0001_init.sql). Checking here is what turns a 500 into a sentence.
    ------------------------------------------------------------------------- */
 
+/* The message comes back in the language of the form that produced it. It is
+   handed to the visitor through ?lead_error= and rendered on the page they just
+   failed to submit, which is the single worst place on the site to leak an
+   English sentence: the reader is already stuck and this text is the only thing
+   telling them how to get unstuck. */
 export function validateLead(input: LeadInput): string | null {
-  if (!input.full_name) return "Please tell us your name.";
+  const t = input.lang === "en" ? null : leadStrings(input.lang);
+
+  if (!input.full_name) {
+    return t ? t.errNeedName : "Please tell us your name.";
+  }
   if (!input.email && !input.phone) {
-    return "Please leave an email address or a phone number so we can reply.";
+    return t
+      ? t.errNeedContact
+      : "Please leave an email address or a phone number so we can reply.";
   }
   if (input.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.email)) {
-    return "That email address doesn't look right.";
+    return t ? t.errBadEmail : "That email address doesn't look right.";
   }
   return null;
 }
@@ -271,6 +298,7 @@ export async function saveLead(
   const sb = supabaseAdmin();
   const row = {
     intent: input.intent,
+    lang: input.lang,
     full_name: input.full_name,
     email: input.email,
     phone: input.phone,
@@ -298,13 +326,37 @@ export async function saveLead(
     ip_hash: ipHash,
   };
 
-  for (let attempt = 0; attempt < 2; attempt++) {
+  /* ── Surviving an unapplied 0015 ──────────────────────────────────────────
+     `lang` needs a migration that has to be run by hand in the SQL editor,
+     because there is no DDL path from a developer machine on this project. The
+     German forms therefore exist before the column does, and the ordering is
+     not something the code can enforce.
+
+     What it can do is refuse to lose the lead over it. PostgREST answers an
+     unknown column with 42703 (undefined_column), so that one error — and only
+     that one — retries without the field. A German lead then lands intact and
+     merely unlabelled, and starts carrying its language the moment 0015 runs,
+     with no redeploy. Any other error is a real failure and still throws.
+
+     Delete this fallback once 0015 is applied everywhere. It is scaffolding for
+     a known window, not a permanent tolerance for schema drift. */
+  let withLang = true;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const payload = { ...row, reference: newReference() };
+    if (!withLang) delete (payload as { lang?: string }).lang;
+
     const { data, error } = await sb
       .from("leads")
-      .insert({ ...row, reference: newReference() })
+      .insert(payload)
       .select("id, reference")
       .single();
     if (!error && data) return data;
+
+    if (error?.code === "42703" && withLang) {
+      withLang = false;
+      continue;
+    }
     // 23505 = unique_violation, i.e. the reference collided. Anything else is
     // not going to be fixed by trying again.
     if (error?.code !== "23505") {

@@ -179,8 +179,19 @@ async function sendTelegramAlert(
     ? `⚠️ Possible spam — ${suspicious.join(", ")}. No confirmation email was sent.\n\n`
     : "";
 
+  /* Banner, not a field. The broker replies in English either way — that is
+     decision 6 of the localisation plan and the German form says so plainly to
+     the reader before they submit — but opening in English with someone who has
+     just read 2,500 words of German goes better when it is not a surprise to
+     either party. Buried on line nine it would be read after the call. */
+  const language =
+    input.lang !== "en"
+      ? `🇩🇪 Came from the German site. They were told we reply in English.\n\n`
+      : "";
+
   const text =
     warning +
+    language +
     header +
     line("Email", input.email) +
     line("Phone", input.phone) +

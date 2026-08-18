@@ -5,7 +5,14 @@ import { notFound } from "next/navigation";
 import { categories } from "@/lib/content";
 import { listTranslationsIn } from "@/lib/articles";
 import { mediaUrl } from "@/lib/media";
-import { categoryCopy, categorySlug, categorySlugToEn, ui } from "@/lib/i18n";
+import {
+  categoryCopy,
+  categorySlug,
+  categorySlugToEn,
+  leadCopy,
+  ui,
+} from "@/lib/i18n";
+import { Button } from "@/components/ui";
 
 export const revalidate = 60;
 
@@ -59,6 +66,8 @@ export default async function GermanCategoryPage({
      renders empty and says so — it never lists the English ones. */
   const inCategory = await listTranslationsIn("de", enSlug);
   const siblings = categories.filter((c) => c.slug !== enSlug);
+  /* Keyed on the English slug, same as the in-guide blocks. */
+  const lc = leadCopy("de", enSlug);
 
   return (
     <>
@@ -150,11 +159,19 @@ export default async function GermanCategoryPage({
             </div>
           )}
 
-          {/* The English hub closes with a lead-capture block pointing at
-              /contact. Omitted rather than translated: the German contact form,
-              the `leads.lang` column and the line telling a German reader the
-              broker replies in English are all E4. A CTA that lands on a 404,
-              or that quietly switches language, costs more than no CTA. */}
+          {/* The same closing block the English hub carries, pointing at the
+              German form. It matters most on an empty category: a reader who
+              arrives before the guides are translated should still have
+              somewhere to go other than back. */}
+          <div className="mt-12 rounded-md bg-brand-800 text-white p-[clamp(24px,4vw,40px)] flex flex-wrap items-center justify-between gap-6">
+            <div>
+              <h2 className="font-display text-[clamp(20px,2.6vw,26px)] font-bold tracking-[-0.019em] text-white max-w-[26ch] leading-tight">
+                {lc.heading}
+              </h2>
+              <p className="mt-2.5 text-white/85 max-w-[52ch]">{lc.body}</p>
+            </div>
+            <Button href="/de/kontakt">{lc.button}</Button>
+          </div>
         </div>
       </section>
     </>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DocumentShell, documentMetadata } from "@/components/document-shell";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { StickyCta } from "@/components/sticky-cta";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { MetaPixel } from "@/components/meta-pixel";
 
@@ -10,10 +11,11 @@ import { MetaPixel } from "@/components/meta-pixel";
    could only ever hardcode a single language, which is exactly how the
    withdrawn machine-translated tree came to serve German under `lang="en"`.
 
-   `StickyCta` is deliberately absent. It is a mobile lead-capture bar whose
-   copy is English and whose destination is `/contact`, and neither exists in
-   German yet — the German contact form and the "we reply in English" line are
-   E4 in docs/german-launch-plan.md. Analytics and the pixel are here because
+   `StickyCta` is here for the same reason it is on the English side: mobile is
+   the breakpoint with the least to work with, and a third of sessions are
+   mobile. It keeps its German general line rather than fetching the
+   English-composed social-proof line — see the component. Analytics and the
+   pixel are here because
    they belong to the public site in both languages; the German pages have to
    be measurable from the day they ship, since whether they hold the positions
    the old tree held is the entire experiment. */
@@ -38,6 +40,7 @@ export default function GermanLayout({
       <SiteHeader locale="de" />
       <main className="flex-1">{children}</main>
       <SiteFooter locale="de" />
+      <StickyCta locale="de" />
       <GoogleAnalytics />
       <MetaPixel />
     </DocumentShell>

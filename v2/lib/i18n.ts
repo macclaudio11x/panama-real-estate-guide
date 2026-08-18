@@ -84,7 +84,10 @@ const SECTION_SLUGS: Record<Locale, Record<string, string>> = {
    by construction — a category index renders whether or not it has articles
    in that language yet. */
 const LIVE_SECTIONS: Record<Locale, readonly string[]> = {
-  de: [],
+  /* `contact` is on. Lead capture is the point of the German tree, not a later
+     ship — a recovered ranking that cannot be contacted is a vanity metric.
+     `areas`, `projects` and `about` are still later ships. */
+  de: ["contact"],
 };
 
 export const sectionIsLive = (locale: PageLocale, enSlug: string): boolean =>
@@ -261,6 +264,234 @@ const UI: Record<Locale, UiStrings> = {
 };
 
 export const ui = (locale: Locale): UiStrings => UI[locale];
+
+/* =============================================================================
+   Lead capture, in German
+   =============================================================================
+   The whole reason for the German tree. A page that recovers a ranking and
+   then has nothing to ask the reader is a vanity metric, so the German guides
+   carry the same three capture blocks as the English ones, and there is a
+   German contact form behind them.
+
+   ⚠️ EVERY STRING IN THIS SECTION IS UNCHECKED GERMAN and goes through the §9a
+   check with the article copy. It is the section §9 of the plan is warning
+   about when it says component copy is written by whoever built the component
+   and is where `du` gets in. It is `Sie` throughout, including every label,
+   every placeholder, every error and the consent line.
+
+   THE ONE LINE THAT IS NOT NEGOTIABLE is `repliesInEnglish`. Decision 6 of
+   docs/localisation-plan.md: the broker takes German enquiries in English, and
+   the form says so before the reader submits rather than after. Someone who
+   has just read 2,500 words of German has every reason to expect a German
+   call back, and finding out otherwise on the phone is a worse experience than
+   reading one honest sentence next to the button.
+   ============================================================================= */
+
+export type LeadCopy = { heading: string; body: string; button: string };
+
+/* One per category, mirroring COPY in components/article-cta.tsx. Transcreated
+   rather than translated: the English buying and money blocks ask about
+   finding a property, the residency and living ones ask about the move, and
+   that split holds in German because it is about the reader, not the language.
+
+   `Makler` rather than `Immobilienmakler` in the body after the first use, and
+   never `Broker`, which in German reads as a securities broker. */
+const LEAD_COPY: Record<Locale, Record<string, LeadCopy>> = {
+  de: {
+    buying: {
+      heading: "Brauchen Sie einen Makler in Panama?",
+      body: "Wir vermitteln Ihnen einen zugelassenen Immobilienmakler, der die Gegend wirklich bearbeitet, über die Sie gerade lesen. Er sagt Ihnen, was zum Verkauf steht, was tatsächlich dafür bezahlt wird und welche Titel sauber sind, bevor Sie sich zu irgendetwas verpflichten.",
+      button: "Makler kontaktieren",
+    },
+    money: {
+      heading: "Suchen Sie eine Immobilie in Ihrem Budget?",
+      body: "Sagen Sie uns ungefähr, womit Sie rechnen, und ein zugelassener Makler meldet sich mit dem, was das wo kauft. Unverbindlich, und niemand nennt Ihnen einen Preis, bevor Sie den Titelstatus kennen.",
+      button: "Makler kontaktieren",
+    },
+    residency: {
+      heading: "Brauchen Sie Hilfe beim Umzug nach Panama?",
+      body: "Ein zugelassener Makler erklärt Ihnen, wie der Aufenthaltsweg, über den Sie gerade lesen, mit Kauf oder Miete vor Ort zusammenpasst und was vor dem Umzug geregelt sein sollte.",
+      button: "Hilfe beim Umzug",
+    },
+    living: {
+      heading: "Brauchen Sie Hilfe beim Umzug nach Panama?",
+      body: "Wenn Sie den Umzug noch abwägen: Ein zugelassener Makler, der hier lebt, sagt Ihnen, wie sich die Gegenden wirklich leben und was Ihr Geld in jeder davon leistet.",
+      button: "Hilfe beim Umzug",
+    },
+  },
+};
+
+export const leadCopy = (locale: Locale, enCategory: string): LeadCopy =>
+  LEAD_COPY[locale][enCategory] ?? LEAD_COPY[locale].buying;
+
+export type LeadStrings = {
+  /* Shared by all three in-guide blocks and the contact form. */
+  fieldName: string;
+  fieldEmail: string;
+  fieldPhone: string;
+  fieldCountry: string;
+  honeypotLabel: string;
+  privacyNote: string;
+  repliesInEnglish: string;
+  toFullForm: string;
+  /* ── Submission errors ────────────────────────────────────────────────────
+     These render on the German form itself, at the moment somebody's
+     submission has just failed. An English sentence here is the worst place on
+     the site to leak one: the reader is already stuck, and the message is the
+     only thing telling them how to get unstuck. Passed through the URL by
+     /api/lead, so they are chosen server-side at the point of failure. */
+  errNeedName: string;
+  errNeedContact: string;
+  errBadEmail: string;
+  errTurnstileFailed: string;
+  errTurnstileAbsent: string;
+  errRateLimited: string;
+  errSaveFailed: string;
+  stickyLine: string;
+  stickyButton: string;
+
+  /* The contact form. */
+  contactEyebrow: string;
+  contactTitle: string;
+  contactDek: string;
+  contactMetaTitle: string;
+  contactMetaDescription: string;
+  howToReachYou: string;
+  howToReachYouNote: string;
+  whatYouWant: string;
+  whatYouWantNote: string;
+  fieldBudget: string;
+  fieldTimeline: string;
+  fieldFinancing: string;
+  fieldResidency: string;
+  fieldAreas: string;
+  fieldNotes: string;
+  budgetOptions: readonly string[];
+  timelineOptions: readonly string[];
+  financingOptions: readonly string[];
+  residencyOptions: readonly string[];
+  areasNoPreference: string;
+  moreDetail: string;
+  consent: string;
+  submit: string;
+  whatHappensNext: string;
+  nextSteps: readonly string[];
+  noSelling: string;
+
+  /* The confirmation page. */
+  thanksEyebrow: string;
+  thanksTitle: string;
+  thanksBody: string;
+  thanksReference: string;
+  thanksBack: string;
+};
+
+const LEAD: Record<Locale, LeadStrings> = {
+  de: {
+    fieldName: "Name",
+    fieldEmail: "E-Mail",
+    fieldPhone: "Telefon oder WhatsApp",
+    fieldCountry: "Wo Sie derzeit leben",
+    /* The honeypot LABEL is German; the field NAME stays `bot-field` in every
+       locale. §7 of the plan is explicit about that — renaming it per language
+       would silently switch off the filter that has caught every junk lead
+       this site has ever received. */
+    honeypotLabel: "Dieses Feld bitte leer lassen",
+    privacyNote:
+      "E-Mail oder Telefon, was Ihnen lieber ist. Wir geben Ihre Daten an genau einen zugelassenen Makler weiter und an sonst niemanden. Es gibt keinen Newsletter.",
+    /* Decision 6. Do not soften this and do not move it below the button. */
+    repliesInEnglish:
+      "Ein Hinweis vorweg: Der Makler antwortet auf Englisch. Schreiben Sie uns ruhig auf Deutsch — wir lesen es und geben es weiter, das Gespräch selbst läuft aber auf Englisch.",
+    toFullForm:
+      "Budget und Zeitrahmen stehen schon fest? Schicken Sie beides und Sie bekommen eine Vorauswahl →",
+    errNeedName: "Bitte nennen Sie uns Ihren Namen.",
+    errNeedContact:
+      "Bitte hinterlassen Sie eine E-Mail-Adresse oder eine Telefonnummer, damit wir antworten können.",
+    errBadEmail: "Diese E-Mail-Adresse sieht nicht richtig aus.",
+    errTurnstileFailed:
+      "Wir konnten die Übermittlung nicht verifizieren. Bitte laden Sie die Seite neu und versuchen Sie es erneut.",
+    errTurnstileAbsent:
+      "Dieses Formular nutzt eine Bot-Prüfung, die JavaScript benötigt. Bitte aktivieren Sie es und versuchen Sie es erneut.",
+    errRateLimited:
+      "Wir haben in der letzten Stunde schon mehrere Anfragen von Ihnen — ein Makler meldet sich.",
+    errSaveFailed:
+      "Beim Speichern Ihrer Angaben ist etwas schiefgelaufen. Bitte versuchen Sie es noch einmal.",
+    stickyLine: "Brauchen Sie einen Makler in Panama?",
+    stickyButton: "Kontakt",
+
+    contactEyebrow: "Sprechen Sie mit jemandem",
+    contactTitle: "Ihre Vorauswahl anfordern",
+    contactDek:
+      "Ein zugelassener Makler meldet sich, in der Regel innerhalb eines Werktags. Den Titelstatus jedes Objekts auf der Liste bekommen Sie, bevor über Preise gesprochen wird.",
+    contactMetaTitle: "Kontakt: Ihre Vorauswahl für Panama anfordern",
+    contactMetaDescription:
+      "Sagen Sie uns Budget, Zeitrahmen und was Sie vorhaben. Sie bekommen eine Vorauswahl mit dem Titelstatus jedes Objekts, geprüft im Registro Público.",
+    howToReachYou: "Wie wir Sie erreichen",
+    howToReachYouNote:
+      "Eine E-Mail-Adresse oder eine Telefonnummer, was Ihnen lieber ist. Eines von beidem genügt.",
+    whatYouWant: "Was Sie suchen",
+    whatYouWantNote:
+      "Mit diesen beiden Angaben können wir Gegenden für Sie ausschließen, statt Ihnen eine allgemeine Liste zu schicken.",
+    fieldBudget: "Budget",
+    fieldTimeline: "Zeitrahmen",
+    fieldFinancing: "Barzahlung oder Finanzierung",
+    fieldResidency: "Interesse am Aufenthaltstitel",
+    fieldAreas: "Gegenden, die Sie in Betracht ziehen",
+    fieldNotes: "Sonstiges",
+    /* USD, and the figures are not converted. Panama uses the US dollar, which
+       a German reader has no reason to know; the bands stay identical to the
+       English form so the two sets of leads remain comparable. */
+    budgetOptions: [
+      "Bitte wählen",
+      "Unter 150.000 USD",
+      "150.000 – 300.000 USD",
+      "300.000 – 600.000 USD",
+      "Über 600.000 USD",
+      "Noch unklar",
+    ],
+    timelineOptions: [
+      "Bitte wählen",
+      "Innerhalb von 3 Monaten",
+      "3 – 12 Monate",
+      "In über einem Jahr",
+      "Ich informiere mich erst",
+    ],
+    financingOptions: [
+      "Bitte wählen",
+      "Barzahlung",
+      "Finanzierung nötig",
+      "Noch unentschieden",
+    ],
+    residencyOptions: [
+      "Bitte wählen",
+      "Ja — der Aufenthaltstitel ist ein Ziel",
+      "Nein — nur der Kauf",
+      "Ich möchte die Möglichkeiten verstehen",
+    ],
+    areasNoPreference: "Noch keine Präferenz",
+    moreDetail: "Mehr Angaben machen, dann grenzen wir weiter ein",
+    consent:
+      "Ich bin damit einverstanden, zu meiner Anfrage kontaktiert zu werden. Wir geben Ihre Daten an genau einen zugelassenen Makler weiter und an sonst niemanden.",
+    submit: "Angaben senden",
+    whatHappensNext: "Wie es weitergeht",
+    nextSteps: [
+      "Wir lesen, was Sie geschickt haben, und schließen die Gegenden aus, die am schlechtesten passen.",
+      "Sie bekommen eine Vorauswahl mit Titelstatus und Fertigstellungsterminen.",
+      "Ein zugelassener Makler ruft an, um sie durchzugehen — auf Englisch.",
+    ],
+    noSelling:
+      "Wir verkaufen Ihre Daten nicht und setzen Sie auf keine Liste, die Sie nicht angefordert haben.",
+
+    thanksEyebrow: "Anfrage eingegangen",
+    thanksTitle: "Danke — wir haben Ihre Angaben",
+    thanksBody:
+      "Ein zugelassener Makler meldet sich, in der Regel innerhalb eines Werktags, und das Gespräch läuft auf Englisch. Die Bestätigung per E-Mail ist ebenfalls auf Englisch.",
+    thanksReference: "Ihr Vorgang",
+    thanksBack: "Zurück zu den Ratgebern",
+  },
+};
+
+export const lead = (locale: Locale): LeadStrings => LEAD[locale];
 
 /* ── Lookups ─────────────────────────────────────────────────────────────────
    Both directions. Forward builds URLs, reverse resolves an incoming request

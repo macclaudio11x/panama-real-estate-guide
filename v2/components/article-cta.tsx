@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LeadAttribution, LeadFormError } from "@/components/lead-attribution";
 import { Turnstile } from "@/components/turnstile";
+import { type PageLocale, lead as leadStrings, leadCopy, localePath } from "@/lib/i18n";
 
 /* =============================================================================
    Article lead capture
@@ -96,15 +97,21 @@ export function ArticleCta({
   category,
   tone,
   formId,
+  locale = "en",
 }: {
+  /** Always the ENGLISH category slug, in every locale. It keys the copy table
+   *  and it is what the lead row records, so the two languages' leads stay
+   *  comparable in the CRM. */
   category: string;
   tone: Tone;
   /** Unique per instance: an article renders up to three of these, and three
    *  elements sharing an id is invalid HTML that also breaks the #lead-form
    *  anchor /api/lead redirects a rejected submission back to. */
   formId: string;
+  locale?: PageLocale;
 }) {
-  const copy = COPY[category] ?? FALLBACK;
+  const t = locale === "en" ? null : leadStrings(locale);
+  const copy = locale === "en" ? (COPY[category] ?? FALLBACK) : leadCopy(locale, category);
   const dark = onDark[tone];
 
   /* The rejection message belongs on exactly one form per page — the canonical
@@ -144,6 +151,10 @@ export function ArticleCta({
             form: same wish for a broker, none of the qualifiers. The broker's
             alert and the confirmation email both branch on it. */}
         <input type="hidden" name="intent" value="article" />
+        {/* Written by the route that rendered the form, not read off the
+            browser. See 0015_lead_lang.sql. English forms omit it and the
+            server reads a missing value as "en". */}
+        {locale !== "en" && <input type="hidden" name="lang" value={locale} />}
         {/* utm_*, gclid, fbclid, page_path, referrer. Without page_path we
             could not tell which guide produced the lead. */}
         <LeadAttribution />
@@ -151,7 +162,11 @@ export function ArticleCta({
 
         {/* Honeypot, same convention as the contact form. */}
         <div className="hidden" aria-hidden>
-          <label htmlFor={`${formId}-bot`}>Leave this empty</label>
+          {/* Label translated, field NAME identical across locales — renaming
+              `bot-field` per language would switch off the filter. */}
+          <label htmlFor={`${formId}-bot`}>
+            {t ? t.honeypotLabel : "Leave this empty"}
+          </label>
           <input id={`${formId}-bot`} name="bot-field" tabIndex={-1} />
         </div>
 
@@ -165,40 +180,40 @@ export function ArticleCta({
           }
         >
           <label className="sr-only" htmlFor={`${formId}-name`}>
-            Name
+            {t ? t.fieldName : "Name"}
           </label>
           <input
             id={`${formId}-name`}
             name="full_name"
             required
             autoComplete="name"
-            placeholder="Name"
+            placeholder={t ? t.fieldName : "Name"}
             className={field}
           />
 
           <label className="sr-only" htmlFor={`${formId}-email`}>
-            Email
+            {t ? t.fieldEmail : "Email"}
           </label>
           <input
             id={`${formId}-email`}
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="Email"
+            placeholder={t ? t.fieldEmail : "Email"}
             className={field}
           />
 
           {/* Optional, and deliberately offered: this market runs on WhatsApp,
               and /api/lead accepts a phone number in place of an email. */}
           <label className="sr-only" htmlFor={`${formId}-phone`}>
-            Phone or WhatsApp
+            {t ? t.fieldPhone : "Phone or WhatsApp"}
           </label>
           <input
             id={`${formId}-phone`}
             name="phone"
             type="tel"
             autoComplete="tel"
-            placeholder="Phone or WhatsApp"
+            placeholder={t ? t.fieldPhone : "Phone or WhatsApp"}
             className={field}
           />
         </div>
@@ -221,23 +236,49 @@ export function ArticleCta({
       {/* What happens to the details, in the same words the contact form and
           the footer use. Someone handing over a phone number in the middle of
           an article is owed that before they do it, not after. */}
+      {/* Decision 6 of docs/localisation-plan.md, and it goes ABOVE the privacy
+          note rather than in the small print at the bottom. Someone who has
+          just read 2,500 words of German has every reason to expect a German
+          call back; they should learn otherwise here, while they are deciding
+          whether to type their number, not on the phone. */}
+      {t && (
+        <p
+          className={`mt-4 text-[14px] leading-relaxed font-medium ${
+            dark ? "text-white/85" : "text-body"
+          }`}
+        >
+          {t.repliesInEnglish}
+        </p>
+      )}
       <p
         className={`mt-4 text-[13.5px] leading-relaxed ${
           dark ? "text-white/60" : "text-muted"
         }`}
       >
-        Email or phone, whichever you&rsquo;d rather. We pass your details to one
-        licensed broker and no one else, and there&rsquo;s no newsletter.
+        {t ? (
+          t.privacyNote
+        ) : (
+          <>
+            Email or phone, whichever you&rsquo;d rather. We pass your details to
+            one licensed broker and no one else, and there&rsquo;s no newsletter.
+          </>
+        )}
       </p>
       <p className={`mt-3 text-[14px] ${dark ? "text-white/80" : "text-body"}`}>
         <Link
-          href="/contact"
+          href={localePath(locale, "/contact")}
           className={`font-display font-semibold no-underline hover:underline ${
             dark ? "text-accent" : "text-link"
           }`}
         >
-          Know your budget and timeline already? Send those instead and get a
-          shortlist →
+          {t ? (
+            t.toFullForm
+          ) : (
+            <>
+              Know your budget and timeline already? Send those instead and get a
+              shortlist →
+            </>
+          )}
         </Link>
       </p>
     </section>

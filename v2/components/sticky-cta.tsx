@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { type PageLocale, lead as leadStrings, localePath } from "@/lib/i18n";
 
 /* =============================================================================
    Mobile sticky CTA
@@ -37,13 +38,14 @@ const SHOW_AFTER_PX = 600;
 /** Shown everywhere that has nothing more specific to say. */
 const DEFAULT_LINE = "Need a broker in Panama?";
 
-export function StickyCta() {
+export function StickyCta({ locale = "en" }: { locale?: PageLocale }) {
+  const strings = locale === "en" ? null : leadStrings(locale);
   const pathname = usePathname();
   const [scrolledEnough, setScrolledEnough] = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const [line, setLine] = useState(DEFAULT_LINE);
+  const [line, setLine] = useState(strings ? strings.stickyLine : DEFAULT_LINE);
 
-  const suppressed = pathname.startsWith("/contact");
+  const suppressed = pathname.startsWith(localePath(locale, "/contact"));
 
   useEffect(() => {
     if (suppressed) return;
@@ -77,7 +79,19 @@ export function StickyCta() {
        so a line fetched for the previous route cannot survive a navigation and
        name the wrong place. Failures are silent and leave the default: a bar
        that says something general is fine, a bar that says nothing is not. */
-    setLine(DEFAULT_LINE);
+    setLine(strings ? strings.stickyLine : DEFAULT_LINE);
+    /* /api/social-proof composes its line in English from area and project
+       names. On a German page that is an English string leak in the most
+       visible bar on the smallest screen, so German keeps its own general
+       line. Localising the endpoint means translating area positioning copy,
+       which is a content job rather than a component one. */
+    if (strings) {
+      return () => {
+        window.removeEventListener("scroll", onScroll);
+        observer.disconnect();
+      };
+    }
+
     const cancelled = new AbortController();
     fetch(`/api/social-proof?path=${encodeURIComponent(pathname)}`, {
       signal: cancelled.signal,
@@ -93,7 +107,7 @@ export function StickyCta() {
       observer.disconnect();
       cancelled.abort();
     };
-  }, [pathname, suppressed]);
+  }, [pathname, suppressed, strings]);
 
   if (suppressed) return null;
 
@@ -114,11 +128,11 @@ export function StickyCta() {
           {line}
         </p>
         <Link
-          href="/contact"
+          href={localePath(locale, "/contact")}
           tabIndex={visible ? undefined : -1}
           className="shrink-0 rounded-sm bg-accent px-4 py-2.5 font-display text-[14.5px] font-bold text-brand-900 no-underline hover:bg-accent-600 hover:text-white transition-colors"
         >
-          Contact us
+          {strings ? strings.stickyButton : "Contact us"}
         </Link>
       </div>
     </div>

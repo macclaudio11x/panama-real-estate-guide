@@ -18,10 +18,23 @@ import {
   extractHeadings,
   markdownComponents,
 } from "@/components/article-markdown";
+import { ArticleCta } from "@/components/article-cta";
 
 export const revalidate = 60;
 
 const t = ui("de");
+
+/* Same rule as the English route: the `##` nearest the middle, and no mid
+   block at all under four headings. Duplicated rather than shared because it
+   is a placement decision about where a form interrupts a reader, and the two
+   trees are free to answer it differently as the German set grows. */
+function splitForCta(markdown: string): [string, string | null] {
+  const headings = [...markdown.matchAll(/^##\s+.+$/gm)];
+  if (headings.length < 4) return [markdown, null];
+  const at = headings[Math.floor(headings.length / 2)].index;
+  if (at === undefined || at === 0) return [markdown, null];
+  return [markdown.slice(0, at), markdown.slice(at)];
+}
 
 /* Only rows that exist get a param. `dynamicParams` stays at its default true
    so a translation published through the MCP after the last build renders on
@@ -90,6 +103,7 @@ export default async function GermanArticlePage({
   const copy = categoryCopy("de", enCategory);
   const related = await relatedTranslations("de", enCategory, slug);
   const sections = article.body ? extractHeadings(article.body) : [];
+  const [bodyTop, bodyRest] = splitForCta(article.body ?? "");
 
   /* Written by the translator, per §7a. Falls back to the English author only
      so a row with no translator still renders a byline rather than an
@@ -235,15 +249,38 @@ export default async function GermanArticlePage({
               className="w-full h-auto rounded-md mb-[clamp(20px,3vw,32px)]"
             />
           )}
-          {/* One `.prose` block, not two. The English route splits the body to
-              drop a lead-capture form at the middle heading; there is no
-              German form yet (E4), so there is nothing to split around. */}
+          {/* Two `.prose` blocks with the capture form between them, exactly as
+              the English route does it. `.prose` styles its descendants by
+              element, so a form nested inside would inherit link colours and
+              heading sizes meant for editorial copy; sitting between two
+              blocks it inherits nothing.
+
+              `enCategory`, not `kategorie` — the CTA copy table and the lead
+              row are both keyed on the English slug, which is what keeps the
+              two languages' leads comparable in the CRM. */}
           {article.body && (
-            <div className="prose">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                {article.body}
-              </ReactMarkdown>
-            </div>
+            <>
+              <div className="prose">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {bodyTop}
+                </ReactMarkdown>
+              </div>
+              {bodyRest && (
+                <>
+                  <ArticleCta
+                    category={enCategory}
+                    tone="quiet"
+                    formId="lead-form-inline"
+                    locale="de"
+                  />
+                  <div className="prose">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {bodyRest}
+                    </ReactMarkdown>
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           <div className="prose">
@@ -297,6 +334,15 @@ export default async function GermanArticlePage({
               </div>
             )}
           </div>
+
+          {/* The one block every reader reaches on every breakpoint. The rail
+              below is desktop-only. */}
+          <ArticleCta
+            category={enCategory}
+            tone="strong"
+            formId="lead-form"
+            locale="de"
+          />
         </article>
 
         <aside className="hidden min-[860px]:grid gap-6 content-start">
@@ -319,6 +365,15 @@ export default async function GermanArticlePage({
               </ul>
             </nav>
           )}
+
+          <div className="sticky top-[110px]">
+            <ArticleCta
+              category={enCategory}
+              tone="rail"
+              formId="lead-form-rail"
+              locale="de"
+            />
+          </div>
         </aside>
       </div>
 

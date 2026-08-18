@@ -36,6 +36,18 @@ import {
 } from "@/lib/leads";
 import { notifyLead } from "@/lib/lead-notify";
 import { TURNSTILE_FIELD, verifyTurnstile } from "@/lib/turnstile";
+import { lead as leadStrings, localePath, type PageLocale } from "@/lib/i18n";
+
+/* Where a submission is sent afterwards, in the language it was made in.
+   Landing on an English confirmation after filling in a German form is the
+   moment a reader decides the German site is a veneer — and the honeypot path
+   below uses it too, so a bot cannot tell the two trees apart by their
+   redirect targets either.
+
+   Driven by the form's own hidden `lang`, not by the Referer: the page knows
+   its locale and the header can be stripped. */
+const thanksPath = (locale: PageLocale) =>
+  locale === "en" ? "/contact/thanks" : `${localePath(locale, "/contact")}/danke`;
 
 // Leads are written per request and never cached or prerendered.
 export const dynamic = "force-dynamic";
@@ -47,7 +59,12 @@ export const dynamic = "force-dynamic";
  *  JavaScript is off — exactly the case where a redirect is the only way to
  *  show an error at all. The Referer header covers it, and same-origin is
  *  enforced so the header cannot be used to bounce anyone off the site. */
-function backToForm(req: Request, pagePath: string | null, message: string) {
+function backToForm(
+  req: Request,
+  pagePath: string | null,
+  message: string,
+  locale: PageLocale = "en",
+) {
   let path = pagePath && pagePath.startsWith("/") ? pagePath : null;
   if (!path) {
     const referer = req.headers.get("referer");
@@ -60,7 +77,11 @@ function backToForm(req: Request, pagePath: string | null, message: string) {
       }
     }
   }
-  return `${path ?? "/contact"}?lead_error=${encodeURIComponent(message)}#lead-form`;
+  /* The last-resort fallback follows the locale too. Dropping a German
+     submitter onto the English contact form with a German error message would
+     be worse than the failure it is reporting. */
+  const fallback = localePath(locale, "/contact");
+  return `${path ?? fallback}?lead_error=${encodeURIComponent(message)}#lead-form`;
 }
 
 /** True when the POST did not come from a page this site served.
@@ -113,10 +134,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Could not read the submission." }, { status: 400 });
   }
 
+  /* Same rule as validateLead: a failure message is shown to the person who
+     just failed, on the page they failed on, so it has to be in that page's
+     language. */
+  const t = input.lang === "en" ? null : leadStrings(input.lang);
+
   const fail = (message: string, status: number) =>
     wantsJson
       ? NextResponse.json({ error: message }, { status })
-      : NextResponse.redirect(new URL(backToForm(req, input.page_path, message), req.url), 303);
+      : NextResponse.redirect(
+          new URL(backToForm(req, input.page_path, message, input.lang), req.url),
+          303,
+        );
 
   /* ── Bots ────────────────────────────────────────────────────────────────
      The honeypot field is already in the contact form markup. A filled one is
@@ -125,7 +154,7 @@ export async function POST(req: Request) {
   if (input.honeypot) {
     return wantsJson
       ? NextResponse.json({ ok: true })
-      : NextResponse.redirect(new URL("/contact/thanks", req.url), 303);
+      : NextResponse.redirect(new URL(thanksPath(input.lang), req.url), 303);
   }
 
   const invalid = validateLead(input);
@@ -152,20 +181,26 @@ export async function POST(req: Request) {
   const verdict = await verifyTurnstile(token, ip);
   if (verdict === "failed") {
     return fail(
-      "We couldn't verify that submission. Please reload the page and try again.",
+      t
+        ? t.errTurnstileFailed
+        : "We couldn't verify that submission. Please reload the page and try again.",
       403,
     );
   }
   if (verdict === "absent") {
     return fail(
-      "This form uses a bot check that needs JavaScript. Please turn it on and try again.",
+      t
+        ? t.errTurnstileAbsent
+        : "This form uses a bot check that needs JavaScript. Please turn it on and try again.",
       403,
     );
   }
 
   if (await isRateLimited(ipHash)) {
     return fail(
-      "We already have a few enquiries from you in the last hour — a broker will be in touch.",
+      t
+        ? t.errRateLimited
+        : "We already have a few enquiries from you in the last hour — a broker will be in touch.",
       429,
     );
   }
@@ -179,7 +214,12 @@ export async function POST(req: Request) {
     // A visitor cannot act on a Postgres error, but we need it in the log —
     // this is the path where a real buyer disappears.
     console.error("lead insert failed —", err);
-    return fail("Something went wrong saving your details. Please try again.", 500);
+    return fail(
+      t
+        ? t.errSaveFailed
+        : "Something went wrong saving your details. Please try again.",
+      500,
+    );
   }
 
   /* Saved either way. A lead that looks like spam is still shown to the broker,
@@ -199,7 +239,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, reference: lead.reference });
   }
   return NextResponse.redirect(
-    new URL(`/contact/thanks?ref=${encodeURIComponent(lead.reference)}`, req.url),
+    new URL(
+      `${thanksPath(input.lang)}?ref=${encodeURIComponent(lead.reference)}`,
+      req.url,
+    ),
     303,
   );
 }
