@@ -79,10 +79,19 @@
 # Impressions down ~70% in 16 days and still falling, while 16 real clicks in
 # those same 16 days landed on the 410 page. Those are users, not crawlers.
 #
-# This is a STOPGAP and should be removed. The right fix is German content at
-# these URLs, which is what branch `localisation-de` is for. Until that ships,
-# an English page is a worse answer than a German one and a better answer than
-# an error. Revisit when /de/ has real content.
+# This is a STOPGAP and is being dismantled one page at a time. The right fix
+# is German content at these URLs, and as of 2026-08-20 the first of it is
+# live: four of the rules below now point at a GERMAN page rather than an
+# English one, because their article exists in German. The remaining 49 still
+# answer in English, which is a worse answer than German and a better one than
+# an error.
+#
+# WHEN A GERMAN PAGE SHIPS, FLIP ITS RULE HERE. Leaving it pointing at English
+# puts the hreflang target and the redirect target in disagreement, and Google
+# discards a cluster whose alternate 301s somewhere else. Two rules can share
+# one target — pros-cons-retiring-panama.html and dollarization.html were
+# consolidated onto other slugs' articles — so match on the German article,
+# not on a one-to-one guess.
 #
 # ORDER MATTERS. These must sit ABOVE the `/de/*` 410 rule in this file;
 # Netlify applies the first matching rule and the 410 is force=true.
@@ -91,7 +100,7 @@
 # 7 clicks, 276 impr, avg pos 23.6
 [[redirects]]
   from = "/de/articles/retire-in-panama.html"
-  to = "/living/retire-in-panama"
+  to = "/de/leben/auswandern-nach-panama-als-rentner"
   status = 301
   force = true
 
@@ -119,7 +128,7 @@
 # 2 clicks, 37 impr, avg pos 5.4
 [[redirects]]
   from = "/de/articles/panama-real-estate-market-2026.html"
-  to = "/buying/panama-real-estate-market-2026"
+  to = "/de/kaufen/immobilienmarkt-panama"
   status = 301
   force = true
 
@@ -378,7 +387,7 @@
 # 0 clicks, 3 impr, avg pos 32.0
 [[redirects]]
   from = "/de/articles/pros-cons-retiring-panama.html"
-  to = "/living/retire-in-panama"
+  to = "/de/leben/auswandern-nach-panama-als-rentner"
   status = 301
   force = true
 
@@ -399,7 +408,7 @@
 # 0 clicks, 2 impr, avg pos 5.0
 [[redirects]]
   from = "/de/articles/dollarization.html"
-  to = "/buying/panama-real-estate-market-2026"
+  to = "/de/kaufen/immobilienmarkt-panama"
   status = 301
   force = true
 
