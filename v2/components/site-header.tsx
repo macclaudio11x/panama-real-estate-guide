@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { categories } from "@/lib/content";
 import { Button } from "@/components/ui";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import {
   type PageLocale,
   categoryCopy,
@@ -25,7 +26,11 @@ export function SiteHeader({ locale = "en" }: { locale?: PageLocale }) {
 
   return (
     <header className="sticky top-0 z-50 h-[70px] bg-white/92 backdrop-blur-[10px] border-b border-line">
-      <div className="wrap h-full flex items-center gap-8">
+      {/* The gap tightens below the nav breakpoint. There are three flex
+          children, so `gap-8` costs 64px before anything is drawn, and at
+          375px the wordmark alone is 190px of a 339px content box. Desktop
+          keeps the original spacing. */}
+      <div className="wrap h-full flex items-center gap-3 min-[1000px]:gap-8">
         <Link
           href={path("/")}
           className="font-display font-bold text-[17px] tracking-[-0.0204em] text-ink no-underline shrink-0"
@@ -61,7 +66,8 @@ export function SiteHeader({ locale = "en" }: { locale?: PageLocale }) {
           )}
         </nav>
 
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-2.5 min-[1000px]:gap-4">
+          <LanguageSwitcher locale={locale} />
           {live("about") && (
             <Link
               href={path("/about")}
