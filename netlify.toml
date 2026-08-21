@@ -142,7 +142,7 @@
 # 1 clicks, 673 impr, avg pos 57.9
 [[redirects]]
   from = "/de/articles/best-beaches-panama-expats.html"
-  to = "/living/best-beaches-panama-expats"
+  to = "/de/leben/beste-straende-panama"
   status = 301
   force = true
 

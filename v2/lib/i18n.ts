@@ -88,8 +88,13 @@ const SECTION_SLUGS: Record<Locale, Record<string, string>> = {
 const LIVE_SECTIONS: Record<Locale, readonly string[]> = {
   /* `contact` is on. Lead capture is the point of the German tree, not a later
      ship — a recovered ranking that cannot be contacted is a vanity metric.
-     `areas`, `projects` and `about` are still later ships. */
-  de: ["contact"],
+
+     `areas` joined on 2026-08-21, when the first area translation published.
+     The rule is that a section goes live only once its index has something in
+     it: listAreas("de") filters to areas with a published translation, so
+     linking here before that point would have pointed the header at an empty
+     page. `projects` and `about` are still waiting on the same condition. */
+  de: ["contact", "areas"],
 };
 
 export const sectionIsLive = (locale: PageLocale, enSlug: string): boolean =>
