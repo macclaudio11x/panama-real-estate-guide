@@ -85,23 +85,29 @@ ones except P0.
 
 ### P0 — Routes and plumbing · engineering only, no content
 
+**Shipped 2026-08-20.** Both detail bodies were extracted into shared
+components (`<AreaDetail>`, `<ProjectDetail>`) rather than duplicated, so the
+two trees render the same markup and cannot drift. `TitleBadge`, `Stamp`,
+`AreaCard`, `ProjectCard` and `ProjectSearch` all take an optional `locale`
+defaulting to `"en"`, leaving every existing call site untouched.
+
 Nothing renders until rows are published, so this ships safely on its own.
 
-- [ ] `listAreas(locale)` / `getAreaFull(slug, locale)`, returning null on a
+- [x] `listAreas(locale)` / `getAreaFull(slug, locale)`, returning null on a
       missing translation rather than falling back to English — the rule E1
       already set for articles
-- [ ] `listProjects(locale)` / `getProjectFull(slug, locale)`, same rule
-- [ ] `/de/regionen` and `/de/regionen/[slug]`
-- [ ] `/de/projekte` and `/de/projekte/[slug]`
-- [ ] `SECTION_SLUGS` for `areas` → `regionen`, `projects` → `projekte`
+- [x] `listProjects(locale)` / `getProjectFull(slug, locale)`, same rule
+- [x] `/de/regionen` and `/de/regionen/[slug]`
+- [x] `/de/projekte` and `/de/projekte/[slug]`
+- [x] `SECTION_SLUGS` for `areas` → `regionen`, `projects` → `projekte`
 - [ ] `LIVE_SECTIONS.de` gains `areas`, `projects` — **only once each index has
       at least one published row**, or the header links to an empty page
-- [ ] `alternatesForSection` extended to areas and projects. It excludes them
+- [x] `alternatesForSection` extended to areas and projects. It excludes them
       today on purpose, with a comment saying they join "the day /de/regionen
       ships". Pair from the translation tables, never unconditionally: an
       untranslated area must emit a bare canonical.
 - [ ] Sitemap emits the German area and project URLs it can prove exist
-- [ ] Every emitted German URL checked against the four surviving 410 prefixes
+- [x] Every emitted German URL checked against the four surviving 410 prefixes
       in `netlify.toml` (`/de/articles/*`, `/de/news/*`, `/de/projects/*`,
       `/de/videos/*`). **`/de/projekte` is safe; `/de/projects` is not.** That
       near-collision is the reason this line is in the plan.

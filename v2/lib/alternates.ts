@@ -290,3 +290,62 @@ export async function alternatesForArea(
 
   return { canonical, languages };
 }
+
+/* =============================================================================
+   Projects
+   =============================================================================
+   Same shape as areas, and for the same reasons. A development's slug does not
+   change between languages — Bioma Costa del Este is Bioma Costa del Este — so
+   this needs only a yes/no on whether the translation is published.
+   ============================================================================= */
+
+const translatedProjectSlugs = cache(async (): Promise<Map<Locale, Set<string>>> => {
+  const { data, error } = await supabase
+    .from("project_translations")
+    .select(`lang, project:projects!project_translations_project_id_fkey!inner ( slug )`)
+    .eq("published", true);
+
+  const out = new Map<Locale, Set<string>>();
+  if (error || !data) return out;
+
+  for (const r of data as unknown as {
+    lang: string;
+    project: { slug: string } | { slug: string }[] | null;
+  }[]) {
+    if (!(LOCALES as readonly string[]).includes(r.lang)) continue;
+    const p = Array.isArray(r.project) ? r.project[0] : r.project;
+    if (!p?.slug) continue;
+    const lang = r.lang as Locale;
+    if (!out.has(lang)) out.set(lang, new Set());
+    out.get(lang)!.add(p.slug);
+  }
+  return out;
+});
+
+export const enProjectPath = (slug: string) => `/projects/${slug}`;
+export const localeProjectPath = (locale: Locale, slug: string) =>
+  `/${locale}/${sectionSlug(locale, "projects")}/${slug}`;
+
+export async function alternatesForProject(
+  slug: string,
+  currentLocale: "en" | Locale = "en",
+): Promise<Alternates> {
+  const byLang = await translatedProjectSlugs();
+  const present = LOCALES.filter((l) => byLang.get(l)?.has(slug));
+
+  const canonical =
+    currentLocale === "en"
+      ? enProjectPath(slug)
+      : localeProjectPath(currentLocale, slug);
+
+  if (present.length === 0) return { canonical };
+
+  const enUrl = abs(enProjectPath(slug));
+  const languages: Record<string, string> = {
+    [hreflang.en]: enUrl,
+    "x-default": enUrl,
+  };
+  for (const l of present) languages[hreflang[l]] = abs(localeProjectPath(l, slug));
+
+  return { canonical, languages };
+}

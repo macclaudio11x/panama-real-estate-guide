@@ -71,7 +71,7 @@ export default async function GermanAreaPage({
   if (!editorial) notFound();
 
   const [areaProjects, areas] = await Promise.all([
-    getProjectsForArea(slug),
+    getProjectsForArea(slug, "de"),
     listAreas("de"),
   ]);
 

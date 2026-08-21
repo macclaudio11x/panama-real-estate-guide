@@ -120,16 +120,54 @@ export const listAllProjects = cache(async (): Promise<Project[]> => {
   return (data as unknown as ProjectRow[]).map(toProject);
 });
 
-export const listProjects = cache(async (): Promise<Project[]> =>
-  (await listAllProjects()).filter((p) => p.published),
+/* Unlike an area card, a project CARD renders nothing that needs translating:
+   name, price, beds, size and photos are all structural, and the one enum on it
+   goes through statusLabelFor. So a locale only filters the list; it does not
+   merge anything in. The translated prose is fetched per-slug by the detail
+   page through lib/editorial.ts. */
+const translatedProjectSlugs = cache(
+  async (locale: Exclude<PageLocale, "en">): Promise<Set<string>> => {
+    const { data, error } = await supabase
+      .from("project_translations")
+      .select(`project:projects!project_translations_project_id_fkey!inner ( slug )`)
+      .eq("lang", locale)
+      .eq("published", true);
+
+    if (error || !data) return new Set();
+
+    return new Set(
+      (data as unknown as { project: { slug: string } | { slug: string }[] | null }[])
+        .map((r) => (Array.isArray(r.project) ? r.project[0] : r.project))
+        .map((x) => x?.slug)
+        .filter((x): x is string => Boolean(x)),
+    );
+  },
 );
 
-export const getProject = cache(async (slug: string): Promise<Project | null> =>
-  (await listAllProjects()).find((p) => p.slug === slug) ?? null,
+export const listProjects = cache(
+  async (locale: PageLocale = "en"): Promise<Project[]> => {
+    const published = (await listAllProjects()).filter((p) => p.published);
+    if (locale === "en") return published;
+    const ok = await translatedProjectSlugs(locale);
+    return published.filter((p) => ok.has(p.slug));
+  },
 );
 
-export const getProjectsForArea = cache(async (slug: string): Promise<Project[]> =>
-  (await listProjects()).filter((p) => p.areaSlug === slug),
+export const getProject = cache(
+  async (slug: string, locale: PageLocale = "en"): Promise<Project | null> => {
+    if (locale === "en") {
+      return (await listAllProjects()).find((p) => p.slug === slug) ?? null;
+    }
+    return (await listProjects(locale)).find((p) => p.slug === slug) ?? null;
+  },
+);
+
+/* Locale matters here even though a project card shows no translated prose:
+   on the German tree these cards link to /de/projekte/<slug>, and a project
+   with no published German page would be a link straight to a 404. */
+export const getProjectsForArea = cache(
+  async (slug: string, locale: PageLocale = "en"): Promise<Project[]> =>
+    (await listProjects(locale)).filter((p) => p.areaSlug === slug),
 );
 
 type AreaRow = {
