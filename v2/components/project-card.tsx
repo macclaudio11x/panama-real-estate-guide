@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Area, Project } from "@/lib/content";
-import { usd, m2, statusLabel } from "@/lib/content";
+import { usd, m2 } from "@/lib/content";
+import { localePath, statusLabelFor, type PageLocale } from "@/lib/i18n";
 import { mediaUrl } from "@/lib/media";
 
 /* =============================================================================
@@ -23,9 +24,13 @@ import { mediaUrl } from "@/lib/media";
 export function ProjectCard({
   project: p,
   area,
+  locale = "en",
 }: {
   project: Project;
   area: Area | undefined;
+  /* Defaults to "en" so every existing call site is unchanged. Same convention
+     as SiteHeader and AreaCard. */
+  locale?: PageLocale;
 }) {
   const [i, setI] = useState(0);
   const photos = p.photos;
@@ -49,7 +54,7 @@ export function ProjectCard({
 
   return (
     <Link
-      href={`/projects/${p.slug}`}
+      href={localePath(locale, `/projects/${p.slug}`)}
       className="group/card flex flex-col rounded-md border border-line bg-white overflow-hidden no-underline shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-200"
     >
       <div className="relative aspect-[4/3] bg-brand-900 overflow-hidden">
@@ -94,7 +99,7 @@ export function ProjectCard({
         <div className="absolute inset-x-0 bottom-0 p-5">
           {p.status && (
             <p className="font-mono text-[11px] uppercase tracking-[0.077em] text-white/70">
-              {statusLabel[p.status]}
+              {statusLabelFor(locale, p.status)}
             </p>
           )}
           <p className="font-display text-[24px] font-bold tracking-[-0.0204em] text-white leading-tight">

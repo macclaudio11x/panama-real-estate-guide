@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { supabase } from "@/lib/supabase";
-import { LOCALES, type Locale, categorySlug, hreflang, localePath } from "@/lib/i18n";
+import { LOCALES, type Locale, categorySlug, hreflang, localePath, sectionSlug } from "@/lib/i18n";
 
 /* =============================================================================
    hreflang, from one place
@@ -223,4 +223,70 @@ export function alternatesForSection(
     canonical: currentLocale === "en" ? enPath : localePath(currentLocale, enPath),
     languages,
   };
+}
+
+/* =============================================================================
+   Areas
+   =============================================================================
+   Areas were deliberately excluded from `alternatesForSection` until /de/regionen
+   existed, on the grounds that "a page with one alternate that is itself is not
+   a cluster — it is noise". The route exists now, so they join, with the same
+   rule articles already follow: paired ONLY where a published translation
+   exists, and never on the strength of the URL being constructible.
+
+   Unlike articles, an area's slug does not change between languages. The area
+   is a place, and Boquete is Boquete. So the pairing needs no slug map, only a
+   yes/no on whether the German page is published.
+   ============================================================================= */
+
+const translatedAreaSlugs = cache(async (): Promise<Map<Locale, Set<string>>> => {
+  const { data, error } = await supabase
+    .from("area_translations")
+    .select(`lang, area:areas!area_translations_area_id_fkey!inner ( slug )`)
+    .eq("published", true);
+
+  const out = new Map<Locale, Set<string>>();
+  if (error || !data) return out;
+
+  for (const r of data as unknown as {
+    lang: string;
+    area: { slug: string } | { slug: string }[] | null;
+  }[]) {
+    if (!(LOCALES as readonly string[]).includes(r.lang)) continue;
+    const a = Array.isArray(r.area) ? r.area[0] : r.area;
+    if (!a?.slug) continue;
+    const lang = r.lang as Locale;
+    if (!out.has(lang)) out.set(lang, new Set());
+    out.get(lang)!.add(a.slug);
+  }
+  return out;
+});
+
+export const enAreaPath = (slug: string) => `/areas/${slug}`;
+export const localeAreaPath = (locale: Locale, slug: string) =>
+  `/${locale}/${sectionSlug(locale, "areas")}/${slug}`;
+
+/** Both trees call this and receive the same `languages` map; only the
+ *  canonical differs. Returns a bare canonical when the area exists in English
+ *  only, so an untranslated area emits no alternate links at all. */
+export async function alternatesForArea(
+  slug: string,
+  currentLocale: "en" | Locale = "en",
+): Promise<Alternates> {
+  const byLang = await translatedAreaSlugs();
+  const present = LOCALES.filter((l) => byLang.get(l)?.has(slug));
+
+  const canonical =
+    currentLocale === "en" ? enAreaPath(slug) : localeAreaPath(currentLocale, slug);
+
+  if (present.length === 0) return { canonical };
+
+  const enUrl = abs(enAreaPath(slug));
+  const languages: Record<string, string> = {
+    [hreflang.en]: enUrl,
+    "x-default": enUrl,
+  };
+  for (const l of present) languages[hreflang[l]] = abs(localeAreaPath(l, slug));
+
+  return { canonical, languages };
 }
