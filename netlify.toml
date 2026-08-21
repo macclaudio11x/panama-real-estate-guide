@@ -114,7 +114,7 @@
 # 2 clicks, 109 impr, avg pos 7.7
 [[redirects]]
   from = "/de/articles/best-neighborhoods-panama-city-expats.html"
-  to = "/buying/best-neighborhoods-panama-city-expats"
+  to = "/de/kaufen/beste-viertel-panama-stadt"
   status = 301
   force = true
 
@@ -261,7 +261,7 @@
 # 0 clicks, 10 impr, avg pos 79.7
 [[redirects]]
   from = "/de/articles/living-in-panama-city.html"
-  to = "/buying/best-neighborhoods-panama-city-expats"
+  to = "/de/kaufen/beste-viertel-panama-stadt"
   status = 301
   force = true
 
