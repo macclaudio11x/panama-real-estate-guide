@@ -1,3 +1,4 @@
+import { titleLabelFor, ui, type PageLocale } from "@/lib/i18n";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -9,13 +10,15 @@ import { titleLabel } from "@/lib/content";
 export function Stamp({
   on,
   onDark = false,
+  locale = "en",
 }: {
   on: string;
   onDark?: boolean;
+  locale?: PageLocale;
 }) {
   return (
     <span className={`stamp${onDark ? " stamp-on-dark" : ""}`}>
-      Verified {on}
+      {locale === "en" ? "Verified" : ui(locale).verifiedStamp} {on}
     </span>
   );
 }
@@ -45,12 +48,20 @@ const titleTone: Record<TitleStatus, string> = {
   unknown: "text-muted bg-paper-warm border-line border-dashed",
 };
 
-export function TitleBadge({ status }: { status: TitleStatus }) {
+export function TitleBadge({
+  status,
+  locale = "en",
+}: {
+  status: TitleStatus;
+  /* Defaults to "en" so every existing call site is unchanged, the same
+     convention SiteHeader uses. The tone class is language-neutral. */
+  locale?: PageLocale;
+}) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold uppercase tracking-[0.077em] px-2 py-[3px] rounded-sm border-[1.5px] ${titleTone[status]}`}
     >
-      {titleLabel[status]}
+      {titleLabelFor(locale, status)}
     </span>
   );
 }

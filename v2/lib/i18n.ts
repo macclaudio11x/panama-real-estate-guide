@@ -1,3 +1,5 @@
+import { titleLabel, statusLabel, type TitleStatus } from "@/lib/content";
+
 /* =============================================================================
    Locales
    =============================================================================
@@ -180,6 +182,11 @@ export const credential = (locale: PageLocale, en: string): string =>
    before any German page ships. Flagged rather than quietly translated. */
 export type UiStrings = {
   navAreas: string;
+  /* Shared chrome: the verification stamp on cards and title claims. */
+  verifiedStamp: string;
+  priceFrom: string;
+  projectsCount: string;
+  pricesAsListed: string;
   navProjects: string;
   navAbout: string;
   navContact: string;
@@ -220,6 +227,10 @@ export type UiStrings = {
 const UI: Record<Locale, UiStrings> = {
   de: {
     navAreas: "Regionen",
+    verifiedStamp: "Geprüft",
+    priceFrom: "ab",
+    projectsCount: "Projekte",
+    pricesAsListed: "Preise laut Angaben der Bauträger",
     navProjects: "Projekte",
     navAbout: "So arbeiten wir",
     navContact: "Kontakt",
@@ -632,3 +643,40 @@ export const formatM2 = (locale: PageLocale, n: number | null): string =>
   n == null
     ? "—"
     : `${new Intl.NumberFormat(INTL_LOCALE[locale]).format(Math.round(n))} m²`;
+
+/* ── Catalogue enum labels ───────────────────────────────────────────────────
+   `titleLabel` and `statusLabel` in lib/content.ts are English constants, read
+   directly by the area table, the area cards and the project cards. Those
+   components are shared between the two trees, so the German routes need the
+   same two maps in German rather than a second set of components.
+
+   "Tituliert" and "derecho de posesión" are the terms the published German
+   pages already use, deliberately: `immobilienmarkt-panama` argues at length
+   that the Registro Público is NOT a Grundbuch, so nothing here may reach for
+   Grundbuch vocabulary to sound more familiar. That familiarity is the error
+   the page exists to correct. */
+
+const TITLE_LABELS: Record<Locale, Record<TitleStatus, string>> = {
+  de: {
+    titled: "Tituliert",
+    rop: "Besitzrecht (derecho de posesión)",
+    mixed: "Gemischt — im Einzelfall prüfen",
+    unknown: "Titel nicht geprüft",
+  },
+};
+
+const STATUS_LABELS: Record<Locale, Record<string, string>> = {
+  de: {
+    preselling: "Im Vorverkauf",
+    "under-construction": "Im Bau",
+    delivered: "Fertiggestellt",
+  },
+};
+
+/** English falls through to the constants in lib/content.ts, which stay the
+ *  source of truth for the English tree. */
+export const titleLabelFor = (locale: PageLocale, s: TitleStatus): string =>
+  locale === "en" ? titleLabel[s] : TITLE_LABELS[locale][s];
+
+export const statusLabelFor = (locale: PageLocale, s: string | null): string | null =>
+  s == null ? null : locale === "en" ? (statusLabel as Record<string, string>)[s] ?? s : STATUS_LABELS[locale][s] ?? s;

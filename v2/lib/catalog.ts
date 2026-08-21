@@ -2,6 +2,7 @@ import { cache } from "react";
 import { supabase } from "@/lib/supabase";
 import { normalizeAmenities } from "@/lib/amenities";
 import type { Area, Photo, Project, TitleStatus, UnitModel } from "@/lib/content";
+import type { PageLocale } from "@/lib/i18n";
 
 /* =============================================================================
    The catalog — projects and areas, read from Supabase
@@ -143,7 +144,37 @@ type AreaRow = {
   title_verified_on: string | null;
 };
 
-export const listAreas = cache(async (): Promise<Area[]> => {
+/* The two editorial fields an area CARD renders. Everything else on the card is
+   a number, a photo or a proper noun, so this is the whole surface a listing
+   needs translated — the long-form prose is fetched per-slug by the detail page
+   through lib/editorial.ts. */
+type AreaCardCopy = { positioning: string | null; title_note: string | null };
+
+const translatedAreaCopy = cache(
+  async (locale: Exclude<PageLocale, "en">): Promise<Map<string, AreaCardCopy>> => {
+    const { data, error } = await supabase
+      .from("area_translations")
+      .select(
+        `positioning, title_note,
+         area:areas!area_translations_area_id_fkey!inner ( slug )`,
+      )
+      .eq("lang", locale)
+      .eq("published", true);
+
+    if (error || !data) return new Map();
+
+    const out = new Map<string, AreaCardCopy>();
+    for (const r of data as unknown as (AreaCardCopy & {
+      area: { slug: string } | { slug: string }[] | null;
+    })[]) {
+      const a = Array.isArray(r.area) ? r.area[0] : r.area;
+      if (a?.slug) out.set(a.slug, { positioning: r.positioning, title_note: r.title_note });
+    }
+    return out;
+  },
+);
+
+export const listAreas = cache(async (locale: PageLocale = "en"): Promise<Area[]> => {
   const [{ data, error }, published] = await Promise.all([
     supabase
       .from("areas")
@@ -155,7 +186,16 @@ export const listAreas = cache(async (): Promise<Area[]> => {
   ]);
   if (error || !data) return [];
 
-  return (data as AreaRow[]).map((a) => {
+  /* An area with no published translation is not a page in this locale, so it
+     is not a card either. Filtering here rather than in the route is what stops
+     a German index linking to a 404, and stops a card rendering German chrome
+     around English prose. */
+  const copy = locale === "en" ? null : await translatedAreaCopy(locale);
+  const rows = copy
+    ? (data as AreaRow[]).filter((a) => copy.has(a.slug))
+    : (data as AreaRow[]);
+
+  return rows.map((a) => {
     const inArea = published.filter((p) => p.areaSlug === a.slug);
 
     const cover = inArea.find((p) => p.photos.length)?.photos[0] ?? null;
@@ -170,8 +210,10 @@ export const listAreas = cache(async (): Promise<Area[]> => {
       name: a.name,
       region: a.region,
       titleStatus: a.title_status,
-      titleNote: a.title_note,
-      positioning: a.positioning,
+      /* Prose is translated; the status enum, the verification date and the
+         prices are facts and stay as they are. See lib/editorial.ts. */
+      titleNote: copy?.get(a.slug)?.title_note ?? a.title_note,
+      positioning: copy?.get(a.slug)?.positioning ?? a.positioning,
       elevationM: a.elevation_m,
       climate: a.climate,
       verifiedOn: a.title_verified_on,
@@ -186,6 +228,7 @@ export const listAreas = cache(async (): Promise<Area[]> => {
   });
 });
 
-export const getArea = cache(async (slug: string): Promise<Area | null> =>
-  (await listAreas()).find((a) => a.slug === slug) ?? null,
+export const getArea = cache(
+  async (slug: string, locale: PageLocale = "en"): Promise<Area | null> =>
+    (await listAreas(locale)).find((a) => a.slug === slug) ?? null,
 );

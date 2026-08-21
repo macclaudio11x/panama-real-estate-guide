@@ -42,7 +42,10 @@ export type ProjectEditorial = TitleClaim & {
 
 export async function getProjectEditorial(
   slug: string,
+  locale: PageLocale = "en",
 ): Promise<ProjectEditorial | null> {
+  if (locale !== "en") return getProjectTranslation(slug, locale);
+
   const { data, error } = await supabase
     .from("projects")
     .select(
@@ -95,7 +98,13 @@ export type AreaEditorialFull = TitleClaim & {
 
 export async function getAreaEditorialFull(
   slug: string,
+  locale: PageLocale = "en",
 ): Promise<AreaEditorialFull | null> {
+  /* Same rule E1 set for articles: a missing translation returns null and the
+     route 404s. It never falls back to English, because a German URL quietly
+     serving English prose is how the withdrawn /de/ tree passed unnoticed. */
+  if (locale !== "en") return getAreaTranslation(slug, locale);
+
   const { data, error } = await supabase
     .from("areas")
     .select(
@@ -126,6 +135,200 @@ export async function getAreaEditorialFull(
     titleNote: data.title_note,
     titleSourceUrl: data.title_source_url,
     titleVerifiedOn: data.title_verified_on,
+    titleVerifiedByName: verifier?.name ?? null,
+  };
+}
+
+/* =============================================================================
+   Translated areas and projects
+   =============================================================================
+   Two rules decide what comes from where, and both follow migration 0014.
+
+   PROSE IS TRANSLATED, EVIDENCE IS NOT. `title_note` is an argument written for
+   a reader and lives on the translation row. `title_status`, the source URL,
+   the verification date and the verifier's name are facts about the Registro
+   Público, identical in every language, and stay on the English row. Copying
+   them would create a second place for a title claim to be wrong.
+
+   SOURCES ARE SHARED, deliberately, exactly as 0013 argued for articles: both
+   language versions cite the same primary documents, most of them Spanish
+   government PDFs whatever language the page is written in, and one array is
+   the only way a corrected citation reaches every language at once. So
+   `area_translations` has no sources column and the English row supplies them.
+
+   `published` on the translation is the gate. It is separate from the parent's
+   own publish state because a half-translated area must render not at all
+   rather than half in English.
+   ============================================================================= */
+
+type AreaTranslationRow = {
+  positioning: string | null;
+  blurb: string | null;
+  cost_of_living_note: string | null;
+  getting_around_note: string | null;
+  suits: string | null;
+  drawbacks: string | null;
+  title_note: string | null;
+  faqs: Faq[] | null;
+  area:
+    | { sources: SourceRef[] | null; title_status: TitleStatus; title_source_url: string | null;
+        title_verified_on: string | null; title_verified_by: { name: string } | { name: string }[] | null }
+    | { sources: SourceRef[] | null; title_status: TitleStatus; title_source_url: string | null;
+        title_verified_on: string | null; title_verified_by: { name: string } | { name: string }[] | null }[]
+    | null;
+};
+
+async function getAreaTranslation(
+  slug: string,
+  locale: Exclude<PageLocale, "en">,
+): Promise<AreaEditorialFull | null> {
+  const { data, error } = await supabase
+    .from("area_translations")
+    .select(
+      `positioning, blurb, cost_of_living_note, getting_around_note,
+       suits, drawbacks, title_note, faqs,
+       area:areas!area_translations_area_id_fkey!inner (
+         slug, sources, title_status, title_source_url, title_verified_on,
+         title_verified_by:authors ( name )
+       )`,
+    )
+    .eq("lang", locale)
+    .eq("published", true)
+    .eq("areas.slug", slug)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const row = data as unknown as AreaTranslationRow;
+  const area = Array.isArray(row.area) ? row.area[0] : row.area;
+  if (!area) return null;
+
+  const verifier = Array.isArray(area.title_verified_by)
+    ? area.title_verified_by[0]
+    : area.title_verified_by;
+
+  return {
+    positioning: row.positioning,
+    blurb: row.blurb,
+    costOfLivingNote: row.cost_of_living_note,
+    gettingAroundNote: row.getting_around_note,
+    suits: row.suits,
+    drawbacks: row.drawbacks,
+    faqs: row.faqs ?? [],
+    sources: area.sources ?? [],
+    titleStatus: area.title_status,
+    titleNote: row.title_note,
+    titleSourceUrl: area.title_source_url,
+    titleVerifiedOn: area.title_verified_on,
+    titleVerifiedByName: verifier?.name ?? null,
+  };
+}
+
+/** Slugs with a published translation in `locale`. This is what the German
+ *  routes hand to `generateStaticParams` and what the index filters on, so an
+ *  untranslated area is not merely 404 on arrival but never linked at all. */
+export async function listTranslatedSlugs(
+  surface: "area" | "project",
+  locale: Exclude<PageLocale, "en">,
+): Promise<string[]> {
+  const table = surface === "area" ? "area_translations" : "project_translations";
+  const parent = surface === "area" ? "areas" : "projects";
+  const fk =
+    surface === "area"
+      ? "areas!area_translations_area_id_fkey!inner"
+      : "projects!project_translations_project_id_fkey!inner";
+
+  const { data, error } = await supabase
+    .from(table)
+    .select(`parent:${fk} ( slug )`)
+    .eq("lang", locale)
+    .eq("published", true);
+
+  if (error || !data) return [];
+
+  return (data as { parent: { slug: string } | { slug: string }[] | null }[])
+    .map((r) => (Array.isArray(r.parent) ? r.parent[0] : r.parent))
+    .map((p) => p?.slug)
+    .filter((s): s is string => Boolean(s))
+    .sort();
+}
+
+type ProjectTranslationRow = {
+  hook: string | null;
+  location_note: string | null;
+  suits: string | null;
+  drawbacks: string | null;
+  buying_note: string | null;
+  title_note: string | null;
+  faqs: Faq[] | null;
+  project:
+    | ProjectFacts
+    | ProjectFacts[]
+    | null;
+};
+
+type ProjectFacts = {
+  architect: string | null;
+  storeys: number | null;
+  total_units: number | null;
+  phases: number | null;
+  price_source_url: string | null;
+  price_checked_on: string | null;
+  title_status: TitleStatus;
+  title_source_url: string | null;
+  title_verified_on: string | null;
+  title_verified_by: { name: string } | { name: string }[] | null;
+};
+
+async function getProjectTranslation(
+  slug: string,
+  locale: Exclude<PageLocale, "en">,
+): Promise<ProjectEditorial | null> {
+  const { data, error } = await supabase
+    .from("project_translations")
+    .select(
+      `hook, location_note, suits, drawbacks, buying_note, title_note, faqs,
+       project:projects!project_translations_project_id_fkey!inner (
+         slug, architect, storeys, total_units, phases,
+         price_source_url, price_checked_on,
+         title_status, title_source_url, title_verified_on,
+         title_verified_by:authors ( name )
+       )`,
+    )
+    .eq("lang", locale)
+    .eq("published", true)
+    .eq("projects.slug", slug)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const row = data as unknown as ProjectTranslationRow;
+  const p = Array.isArray(row.project) ? row.project[0] : row.project;
+  if (!p) return null;
+
+  const verifier = Array.isArray(p.title_verified_by)
+    ? p.title_verified_by[0]
+    : p.title_verified_by;
+
+  return {
+    hook: row.hook,
+    /* Structural, not prose: an architect's name and a storey count read the
+       same in German. */
+    architect: p.architect,
+    storeys: p.storeys,
+    totalUnits: p.total_units,
+    phases: p.phases,
+    locationNote: row.location_note,
+    suits: row.suits,
+    drawbacks: row.drawbacks,
+    buyingNote: row.buying_note,
+    faqs: row.faqs ?? [],
+    priceSourceUrl: p.price_source_url,
+    priceCheckedOn: p.price_checked_on,
+    titleStatus: p.title_status,
+    titleNote: row.title_note,
+    titleSourceUrl: p.title_source_url,
+    titleVerifiedOn: p.title_verified_on,
     titleVerifiedByName: verifier?.name ?? null,
   };
 }

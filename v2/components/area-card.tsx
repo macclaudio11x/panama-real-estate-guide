@@ -1,10 +1,21 @@
 import Link from "next/link";
 import type { Area } from "@/lib/content";
 import { usd } from "@/lib/content";
+import { localePath, ui, type PageLocale } from "@/lib/i18n";
 import { Stamp, TitleBadge, SourceNote } from "@/components/ui";
 import { MediaSlot } from "@/components/media-slot";
 
-export function AreaCard({ area }: { area: Area }) {
+export function AreaCard({
+  area,
+  locale = "en",
+}: {
+  area: Area;
+  /* Defaults to "en" so every existing call site is unchanged. Same convention
+     as SiteHeader. The German tree passes "de" and gets a /de/regionen href and
+     German chrome from the same markup. */
+  locale?: PageLocale;
+}) {
+  const t = locale === "en" ? null : ui(locale);
   const detail = [
     area.elevationM != null ? `${area.elevationM}m` : null,
     area.climate,
@@ -14,7 +25,7 @@ export function AreaCard({ area }: { area: Area }) {
 
   return (
     <Link
-      href={`/areas/${area.slug}`}
+      href={localePath(locale, `/areas/${area.slug}`)}
       className="group flex flex-col rounded-md border border-line bg-white overflow-hidden no-underline shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-200"
     >
       <MediaSlot
@@ -30,10 +41,13 @@ export function AreaCard({ area }: { area: Area }) {
           <p className="font-display text-[19px] font-bold text-ink tnum">
             {area.priceToUsd && area.priceToUsd !== area.priceFromUsd
               ? `${usd(area.priceFromUsd)} – ${usd(area.priceToUsd)}`
-              : `from ${usd(area.priceFromUsd)}`}
+              : `${t ? t.priceFrom : "from"} ${usd(area.priceFromUsd)}`}
           </p>
           <p className="font-mono text-[12px] text-muted tnum">
-            {area.projectCount} project{area.projectCount === 1 ? "" : "s"}
+            {area.projectCount}{" "}
+            {t
+              ? t.projectsCount
+              : `project${area.projectCount === 1 ? "" : "s"}`}
           </p>
         </div>
 
@@ -44,7 +58,7 @@ export function AreaCard({ area }: { area: Area }) {
         )}
 
         <div className="mt-4 pt-4 border-t border-line-soft">
-          <TitleBadge status={area.titleStatus} />
+          <TitleBadge status={area.titleStatus} locale={locale} />
           {area.titleNote && (
             <p className="mt-2.5 text-[13.5px] leading-relaxed text-body">
               {area.titleNote}
@@ -52,9 +66,9 @@ export function AreaCard({ area }: { area: Area }) {
           )}
           <div className="mt-3.5">
             {area.verifiedOn ? (
-              <Stamp on={area.verifiedOn} />
+              <Stamp on={area.verifiedOn} locale={locale} />
             ) : (
-              <SourceNote>Prices as listed by developers</SourceNote>
+              <SourceNote>{t ? t.pricesAsListed : "Prices as listed by developers"}</SourceNote>
             )}
           </div>
         </div>
